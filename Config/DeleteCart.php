@@ -1,58 +1,33 @@
 <?php
 session_start();
-// Đảm bảo đường dẫn include .php là chính xác
-include 'Database.php'; 
+include 'Database.php'; // Đảm bảo đường dẫn file Database chính xác
 
-// Lấy ID người dùng từ session
+$id = $_GET['id'] ?? null;
 $user_id = $_SESSION['user_id'] ?? null;
 
-// Lấy ID của mục giỏ hàng cần xóa từ URL (DeleteCart.php?id=...)
-$cart_id = $_GET['id'] ?? null;
-
-// 1. Kiểm tra đăng nhập và ID mục giỏ hàng
-if (!$user_id) {
-    // Nếu chưa đăng nhập, chuyển hướng về trang đăng nhập
-    header("Location: ../login.php"); 
-    exit;
-}
-
-if (!$cart_id || !is_numeric($cart_id)) {
-    // Nếu không có ID hợp lệ, chuyển hướng về trang giỏ hàng
-    header("Location: ../Cart_Screen.php"); 
-    exit;
-}
-
-// 2. Chuẩn bị và thực thi truy vấn xóa
-// ĐIỀU QUAN TRỌNG: Phải có user_id VÀ cart_id để đảm bảo quyền sở hữu
-$sql = "DELETE FROM cart WHERE id = ? AND user_id = ?";
-
-$stmt = $conn->prepare($sql);
-// Gắn tham số: cart_id (i), user_id (i)
-$stmt->bind_param("ii", $cart_id, $user_id);
-
-if ($stmt->execute()) {
-    // Kiểm tra xem có hàng nào bị ảnh hưởng không
-    if ($stmt->affected_rows > 0) {
-        // Xóa thành công
-        $message = "Đã xóa sản phẩm khỏi giỏ hàng.";
+if ($id && $user_id) {
+    // Xóa sản phẩm dựa trên ID và User ID (để bảo mật)
+    $sql = "DELETE FROM cart WHERE id = ? AND user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $id, $user_id);
+    
+    if ($stmt->execute()) {
+        // [QUAN TRỌNG] Tạo Session thông báo thành công
+        $_SESSION['swal_icon'] = 'success';
+        $_SESSION['swal_title'] = 'Đã xóa!';
+        $_SESSION['swal_text'] = 'Sản phẩm đã được loại bỏ khỏi giỏ hàng.';
     } else {
-        // Nếu affected_rows = 0, có thể mục đó không tồn tại hoặc không thuộc về user này
-        $message = "Không tìm thấy sản phẩm này trong giỏ hàng của bạn.";
+        // Tạo Session thông báo lỗi
+        $_SESSION['swal_icon'] = 'error';
+        $_SESSION['swal_title'] = 'Lỗi!';
+        $_SESSION['swal_text'] = 'Không thể xóa sản phẩm này.';
     }
-} else {
-    $message = "Lỗi khi xóa sản phẩm: " . $stmt->error;
+    $stmt->close();
 }
 
-$stmt->close();
 $conn->close();
 
-// 3. Hiển thị thông báo và chuyển hướng về trang giỏ hàng
-// Có thể dùng SweetAlert2 để thông báo đẹp hơn, nhưng ta dùng cách đơn giản trước
-echo "<script>
-    alert('$message');
-    window.location.href = '../Cart_Screen.php';
-</script>";
-
-exit;
-
+// [QUAN TRỌNG] Chuyển hướng ngay lập tức về trang giỏ hàng
+header("Location: ../User_Screen/Cart_Screen.php");
+exit();
 ?>

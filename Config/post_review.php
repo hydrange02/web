@@ -16,18 +16,21 @@ if (!$item_id || empty($comment)) {
 
 $db = Database::getInstance()->getConnection();
 
-// 1. Kiểm tra xem user đã mua sản phẩm này chưa (trong đơn hàng không bị hủy)
+// 1. Kiểm tra xem user đã mua sản phẩm và ĐÃ NHẬN HÀNG chưa
 $checkBuy = $db->prepare("
     SELECT o.id 
     FROM orders o 
     JOIN order_details od ON o.id = od.order_id 
-    WHERE o.user_id = ? AND od.item_id = ? AND o.status != 'Đã hủy'
+    WHERE o.user_id = ? 
+    AND od.item_id = ? 
+    AND o.status = 'Đã giao hàng'  -- Chỉ cho phép khi đã giao hàng
     LIMIT 1
 ");
 $checkBuy->bind_param("ii", $user_id, $item_id);
 $checkBuy->execute();
+
 if ($checkBuy->get_result()->num_rows === 0) {
-    echo json_encode(['success'=>false, 'message'=>'Bạn phải mua sản phẩm này mới được đánh giá!']);
+    echo json_encode(['success'=>false, 'message'=>'Bạn chỉ được đánh giá sản phẩm đã mua và đã nhận hàng thành công!']);
     exit;
 }
 

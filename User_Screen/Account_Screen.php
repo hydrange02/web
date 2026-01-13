@@ -4,9 +4,14 @@ session_start();
 include '../Config/Database.php';
 
 $id = $_SESSION['user_id'] ?? null;
-if (!$id) { echo "<script>window.location.href = '../index.php';</script>"; exit; }
+if (!$id) {
+    echo "<script>window.location.href = '../index.php';</script>";
+    exit;
+}
 
-if (empty($_SESSION['csrf_token'])) { $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); }
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 $csrf_token = $_SESSION['csrf_token'];
 
 $db = Database::getInstance()->getConnection();
@@ -19,17 +24,25 @@ $stmt->close();
 
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
     </style>
 </head>
+
 <body class="bg-gray-100 font-sans">
-    
+
     <header class="h-[150px] w-full flex flex-col justify-center items-center bg-gradient-to-r from-blue-600 to-teal-400 relative overflow-hidden rounded-b-xl shadow-lg">
         <h1 class="text-3xl font-extrabold text-white">Xin chào, <?= htmlspecialchars($user['username']) ?>!</h1>
         <p class="text-white/90 mt-1">Điểm tích lũy: <b class="text-yellow-300"><?= number_format($user['current_points']) ?></b> pts</p>
@@ -62,27 +75,43 @@ $stmt->close();
             </div>
 
             <div class="w-full md:w-1/3 flex flex-col gap-6">
-                
+
                 <div class="bg-white rounded-2xl shadow-lg p-6 relative">
                     <div class="flex justify-between items-center mb-4">
                         <h1 class="text-lg font-bold text-gray-700 flex items-center gap-2"><i class="fas fa-map-marked-alt text-red-500"></i> Sổ Địa Chỉ</h1>
                         <button onclick="openAddressModal()" class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded hover:bg-blue-200 font-bold"><i class="fas fa-plus"></i> Thêm</button>
                     </div>
                     <div id="address-list" class="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-1">
-                        </div>
+                    </div>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-lg p-6">
-                    <h1 class="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2"><i class="fas fa-key text-orange-500"></i> Bảo Mật</h1>
-                    <div class="space-y-3">
-                        <input type="password" id="old_password" placeholder="Mật khẩu cũ" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-orange-400 outline-none">
-                        <input type="password" id="new_password" placeholder="Mật khẩu mới" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-orange-400 outline-none">
-                        <input type="password" id="confirm_password" placeholder="Xác nhận mật khẩu" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-orange-400 outline-none">
-                        <div class="flex gap-2">
-                            <input type="text" id="otp_code" placeholder="Mã OTP" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-orange-400 outline-none">
-                            <button id="get_otp_btn" class="bg-gray-200 text-gray-700 px-3 py-1 rounded text-xs font-bold hover:bg-gray-300 whitespace-nowrap">Lấy mã</button>
+                    <h1 class="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
+                        <i class="fas fa-key text-orange-500"></i> Đổi Mật Khẩu
+                    </h1>
+                    <div class="space-y-4">
+                        <div class="relative">
+                            <input type="password" id="old_password" placeholder="Mật khẩu hiện tại"
+                                class="w-full pl-4 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none transition bg-gray-50 focus:bg-white">
+                            <i class="fas fa-lock absolute right-3 top-3 text-gray-400"></i>
                         </div>
-                        <button id="change_password_btn" class="w-full bg-orange-500 text-white p-2 rounded font-bold hover:bg-orange-600 transition text-sm">Đổi Mật Khẩu</button>
+
+                        <div class="relative">
+                            <input type="password" id="new_password" placeholder="Mật khẩu mới (tối thiểu 6 ký tự)"
+                                class="w-full pl-4 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none transition bg-gray-50 focus:bg-white">
+                            <i class="fas fa-key absolute right-3 top-3 text-gray-400"></i>
+                        </div>
+
+                        <div class="relative">
+                            <input type="password" id="confirm_password" placeholder="Nhập lại mật khẩu mới"
+                                class="w-full pl-4 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none transition bg-gray-50 focus:bg-white">
+                            <i class="fas fa-check-circle absolute right-3 top-3 text-gray-400"></i>
+                        </div>
+
+                        <button id="change_password_btn"
+                            class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-2.5 rounded-lg shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 text-sm">
+                            <i class="fas fa-save"></i> Cập Nhật Mật Khẩu
+                        </button>
                     </div>
                 </div>
 
@@ -94,8 +123,9 @@ $stmt->close();
     <div id="addr-modal" class="fixed inset-0 bg-gray-900/50 hidden z-50 flex justify-center items-center backdrop-blur-sm">
         <div class="bg-white rounded-xl shadow-2xl w-[400px] p-6 relative animate-bounce-slow">
             <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Thêm Địa Chỉ</h3>
-            
-            <input type="hidden" id="addr_id" value="0"> <div class="space-y-4">
+
+            <input type="hidden" id="addr_id" value="0">
+            <div class="space-y-4">
                 <div>
                     <label class="text-xs font-bold text-gray-500">Tên người nhận</label>
                     <input type="text" id="addr_name" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none">
@@ -116,45 +146,126 @@ $stmt->close();
             </div>
         </div>
     </div>
-    
+
     <script>
         const csrfToken = document.getElementById('csrf_token').value;
 
-        // --- 1. LOGIC QUẢN LÝ ĐỊA CHỈ (Load, Add, Edit, Delete) ---
-        
+        // --- 1. XỬ LÝ UPLOAD AVATAR (SỬA LỖI KHÔNG CHỌN ĐƯỢC ẢNH) ---
+
+        const avatarInput = document.getElementById('avatar');
+        const chooseBtn = document.getElementById('choose-avatar');
+        const previewImg = document.getElementById('preview');
+
+        // Sự kiện 1: Khi bấm nút máy ảnh -> Kích hoạt input file ẩn
+        chooseBtn.addEventListener('click', () => {
+            avatarInput.click();
+        });
+
+        // Sự kiện 2: Khi người dùng chọn file xong -> Upload ngay lập tức
+        avatarInput.addEventListener('change', async function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            // 1. LƯU LẠI ẢNH CŨ (Để restore nếu lỗi)
+            const originalSrc = previewImg.src;
+
+            // 2. Hiển thị ảnh xem trước ngay lập tức (cho mượt)
+            const reader = new FileReader();
+            reader.onload = (e) => previewImg.src = e.target.result;
+            reader.readAsDataURL(file);
+
+            // 3. Chuẩn bị gửi
+            const formData = new FormData();
+            formData.append('avatar_file', file);
+
+            try {
+                // Hiển thị loading nhẹ
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                Toast.fire({
+                    icon: 'info',
+                    title: 'Đang tải ảnh lên...'
+                });
+
+                const res = await fetch('../Config/upload-avatar.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Đổi ảnh đại diện thành công!'
+                    });
+
+                    // Nếu server trả về đường dẫn mới (ví dụ từ Cloudinary), cập nhật luôn cho chắc chắn
+                    if (data.path) {
+                        // Kiểm tra xem path có http không, nếu không thì nối thêm ../
+                        if (data.path.startsWith('http')) {
+                            previewImg.src = data.path;
+                        } else {
+                            previewImg.src = '../' + data.path;
+                        }
+                    }
+                } else {
+                    // --- LỖI: QUAY VỀ ẢNH CŨ ---
+                    Swal.fire('Lỗi upload', data.message, 'error');
+                    previewImg.src = originalSrc; // <--- QUAN TRỌNG: Reset về ảnh cũ
+                    this.value = ''; // Reset input để chọn lại được file vừa lỗi
+                }
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Lỗi', 'Không thể kết nối đến server', 'error');
+
+                // --- LỖI MẠNG: QUAY VỀ ẢNH CŨ ---
+                previewImg.src = originalSrc; // <--- QUAN TRỌNG: Reset về ảnh cũ
+                this.value = '';
+            }
+        });
+
+        // --- 2. LOGIC QUẢN LÝ ĐỊA CHỈ (Load, Add, Edit, Delete) ---
+
         async function loadAddresses() {
             const list = document.getElementById('address-list');
             list.innerHTML = '<p class="text-center text-gray-400 text-xs"><i class="fas fa-spinner fa-spin"></i> Đang tải...</p>';
             try {
                 const res = await fetch('../Config/get_addresses.php');
                 const data = await res.json();
-                if (data.length === 0) { list.innerHTML = '<p class="text-center text-gray-400 text-xs italic">Chưa có địa chỉ nào.</p>'; return; }
-                
+                if (data.length === 0) {
+                    list.innerHTML = '<p class="text-center text-gray-400 text-xs italic">Chưa có địa chỉ nào.</p>';
+                    return;
+                }
+
                 list.innerHTML = data.map(addr => {
-                    // Chuẩn bị dữ liệu an toàn để truyền vào hàm Edit
                     const safeName = addr.recipient_name.replace(/'/g, "&apos;");
                     const safeAddr = addr.address.replace(/'/g, "&apos;");
                     return `
-                    <div class="bg-gray-50 p-3 rounded border border-gray-200 relative group hover:border-blue-300 transition">
-                        <div class="flex justify-between">
-                            <p class="font-bold text-gray-800 text-sm">${addr.recipient_name}</p>
-                            <span class="text-[10px] text-gray-500 bg-white border px-1 rounded">${addr.phone}</span>
-                        </div>
-                        <p class="text-xs text-gray-600 mt-1 line-clamp-2">${addr.address}</p>
-                        
-                        <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                            <button onclick="openAddressModal(${addr.id}, '${safeName}', '${addr.phone}', '${safeAddr}')" class="w-6 h-6 flex items-center justify-center bg-white text-blue-500 rounded border hover:bg-blue-500 hover:text-white transition"><i class="fas fa-pen text-[10px]"></i></button>
-                            <button onclick="deleteAddress(${addr.id})" class="w-6 h-6 flex items-center justify-center bg-white text-red-500 rounded border hover:bg-red-500 hover:text-white transition"><i class="fas fa-trash text-[10px]"></i></button>
-                        </div>
-                    </div>`;
+                <div class="bg-gray-50 p-3 rounded border border-gray-200 relative group hover:border-blue-300 transition">
+                    <div class="flex justify-between">
+                        <p class="font-bold text-gray-800 text-sm">${addr.recipient_name}</p>
+                        <span class="text-[10px] text-gray-500 bg-white border px-1 rounded">${addr.phone}</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-1 line-clamp-2">${addr.address}</p>
+                    
+                    <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                        <button onclick="openAddressModal(${addr.id}, '${safeName}', '${addr.phone}', '${safeAddr}')" class="w-6 h-6 flex items-center justify-center bg-white text-blue-500 rounded border hover:bg-blue-50 hover:text-white transition"><i class="fas fa-pen text-[10px]"></i></button>
+                        <button onclick="deleteAddress(${addr.id})" class="w-6 h-6 flex items-center justify-center bg-white text-red-500 rounded border hover:bg-red-50 hover:text-white transition"><i class="fas fa-trash text-[10px]"></i></button>
+                    </div>
+                </div>`;
                 }).join('');
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         }
         loadAddresses();
 
-        // Mở Modal (Dùng chung cho Thêm và Sửa)
         function openAddressModal(id = 0, name = '', phone = '', detail = '') {
-            document.getElementById('addr_modal').classList.remove('hidden');
+            document.getElementById('addr-modal').classList.remove('hidden');
             document.getElementById('addr_id').value = id;
             document.getElementById('addr_name').value = name;
             document.getElementById('addr_phone').value = phone;
@@ -163,24 +274,17 @@ $stmt->close();
         }
 
         function closeAddressModal() {
-            document.getElementById('addr_modal').classList.add('hidden');
+            document.getElementById('addr-modal').classList.add('hidden');
         }
 
-        // Lưu địa chỉ (Validate kỹ càng)
         async function saveAddress() {
             const id = document.getElementById('addr_id').value;
             const name = document.getElementById('addr_name').value.trim();
             const phone = document.getElementById('addr_phone').value.trim();
             const address = document.getElementById('addr_detail').value.trim();
 
-            // VALIDATE FORM
-            if (!name || !phone || !address) {
-                return Swal.fire('Thiếu thông tin', 'Vui lòng điền đầy đủ các trường!', 'warning');
-            }
-            // Regex check số điện thoại VN (10-11 số)
-            if (!/^[0-9]{10,11}$/.test(phone)) {
-                return Swal.fire('SĐT không hợp lệ', 'Số điện thoại phải có 10-11 chữ số!', 'error');
-            }
+            if (!name || !phone || !address) return Swal.fire('Thiếu thông tin', 'Vui lòng điền đầy đủ!', 'warning');
+            if (!/^[0-9]{10,11}$/.test(phone)) return Swal.fire('Lỗi', 'Số điện thoại không hợp lệ!', 'error');
 
             const formData = new FormData();
             formData.append('id', id);
@@ -191,36 +295,183 @@ $stmt->close();
             const apiUrl = (id == 0) ? '../Config/add_address.php' : '../Config/edit_address.php';
 
             try {
-                const res = await fetch(apiUrl, { method: 'POST', body: formData });
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    body: formData
+                });
                 const data = await res.json();
-                
                 if (data.success) {
-                    Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 1500, showConfirmButton: false });
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công',
+                        text: data.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
                     closeAddressModal();
                     loadAddresses();
                 } else {
                     Swal.fire('Lỗi', data.message, 'error');
                 }
-            } catch(e) { Swal.fire('Lỗi', 'Không kết nối được server', 'error'); }
-        }
-        
-        async function deleteAddress(id) {
-             if(!confirm('Xóa địa chỉ này?')) return;
-            try {
-                const formData = new FormData(); formData.append('id', id);
-                const res = await fetch('../Config/delete_address.php', { method: 'POST', body: formData });
-                const data = await res.json();
-                if(data.success) { loadAddresses(); } else Swal.fire('Lỗi', data.message, 'error');
-            } catch(e) {}
+            } catch (e) {
+                Swal.fire('Lỗi', 'Không kết nối được server', 'error');
+            }
         }
 
-        // --- 2. CÁC LOGIC KHÁC (Update Info, Avatar, Password...) GIỮ NGUYÊN ---
-        document.getElementById('button').addEventListener('click', async () => { /* ... Logic Update Info cũ ... */ });
-        /* ... Logic Avatar, Change Password cũ ... */
-        // Bạn copy lại phần JS xử lý đổi mật khẩu và avatar từ file cũ vào đây nhé
+        async function deleteAddress(id) {
+            if (!confirm('Xóa địa chỉ này?')) return;
+            try {
+                const formData = new FormData();
+                formData.append('id', id);
+                const res = await fetch('../Config/delete_address.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadAddresses();
+                } else Swal.fire('Lỗi', data.message, 'error');
+            } catch (e) {}
+        }
+
+        // --- 3. CẬP NHẬT THÔNG TIN CÁ NHÂN ---
+        document.getElementById('button').addEventListener('click', async () => {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('email', email);
+            formData.append('phone', phone);
+            formData.append('csrf_token', csrfToken);
+
+            try {
+                const res = await fetch('../Config/update_info.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                Swal.fire(data.success ? 'Thành công' : 'Lỗi', data.message, data.success ? 'success' : 'error');
+            } catch (e) {
+                Swal.fire('Lỗi', 'Lỗi kết nối', 'error');
+            }
+        });
+
+        // --- 4. ĐỔI MẬT KHẨU (LOGIC MỚI KHÔNG CẦN OTP) ---
+        document.getElementById('change_password_btn').addEventListener('click', async () => {
+            const oldPass = document.getElementById('old_password').value;
+            const newPass = document.getElementById('new_password').value;
+            const confirmPass = document.getElementById('confirm_password').value;
+
+            // Validate Frontend cơ bản
+            if (!oldPass || !newPass || !confirmPass) {
+                return Swal.fire({
+                    icon: 'warning',
+                    title: 'Thiếu thông tin',
+                    text: 'Vui lòng nhập đầy đủ các trường mật khẩu!'
+                });
+            }
+
+            if (newPass.length < 6) {
+                return Swal.fire({
+                    icon: 'warning',
+                    title: 'Mật khẩu quá ngắn',
+                    text: 'Mật khẩu mới phải có ít nhất 6 ký tự.'
+                });
+            }
+
+            if (newPass !== confirmPass) {
+                return Swal.fire({
+                    icon: 'error',
+                    title: 'Không khớp',
+                    text: 'Mật khẩu xác nhận không trùng khớp!'
+                });
+            }
+
+            // Gửi dữ liệu
+            const formData = new FormData();
+            formData.append('old_password', oldPass);
+            formData.append('new_password', newPass);
+            formData.append('csrf_token', csrfToken);
+
+            try {
+                // Hiển thị loading
+                const btn = document.getElementById('change_password_btn');
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
+                const res = await fetch('../Config/change_password.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                // Trả lại nút bấm
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.',
+                        confirmButtonText: 'Đăng nhập lại'
+                    }).then(() => {
+                        window.location.href = '../Config/logout.php';
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Thất bại',
+                        text: data.message
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('change_password_btn').disabled = false;
+                Swal.fire('Lỗi', 'Lỗi kết nối đến máy chủ.', 'error');
+            }
+        });
+
+        // Logic Đổi Pass
+        document.getElementById('change_password_btn').addEventListener('click', async () => {
+            const oldPass = document.getElementById('old_password').value;
+            const newPass = document.getElementById('new_password').value;
+            const confirmPass = document.getElementById('confirm_password').value;
+            const otp = document.getElementById('otp_code').value;
+
+            if (!oldPass || !newPass || !otp) return Swal.fire('Thiếu thông tin', '', 'warning');
+            if (newPass !== confirmPass) return Swal.fire('Lỗi', 'Mật khẩu mới không khớp', 'error');
+
+            const formData = new FormData();
+            formData.append('old_password', oldPass);
+            formData.append('new_password', newPass);
+            formData.append('otp', otp);
+            formData.append('csrf_token', csrfToken);
+
+            try {
+                const res = await fetch('../Config/change_password.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    Swal.fire('Thành công', 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.', 'success').then(() => window.location.href = '../Config/logout.php');
+                } else {
+                    Swal.fire('Thất bại', data.message, 'error');
+                }
+            } catch (e) {
+                Swal.fire('Lỗi', 'Lỗi hệ thống', 'error');
+            }
+        });
     </script>
-    
-    <script>document.getElementById('addr-modal').id = 'addr_modal';</script> 
+
+    <script>
+        document.getElementById('addr-modal').id = 'addr_modal';
+    </script>
     <?php include '../Compoment/Footer.php'; ?>
 </body>
+
 </html>

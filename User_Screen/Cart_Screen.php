@@ -7,6 +7,10 @@
     <title>Giỏ Hàng - Hydrange Shop</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         @keyframes bounce-slow {
 
@@ -64,6 +68,23 @@
 
         <?php endif; ?>
     </div>
+    <?php if (isset($_SESSION['swal_icon'])): ?>
+        <script>
+            Swal.fire({
+                icon: '<?= $_SESSION['swal_icon'] ?>',
+                title: '<?= $_SESSION['swal_title'] ?>',
+                text: '<?= $_SESSION['swal_text'] ?>',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        </script>
+        <?php
+        // Xóa session ngay sau khi hiện để không lặp lại khi F5
+        unset($_SESSION['swal_icon']);
+        unset($_SESSION['swal_title']);
+        unset($_SESSION['swal_text']);
+        ?>
+    <?php endif; ?>
 </body>
 
 </html>

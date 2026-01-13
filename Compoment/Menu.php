@@ -1,150 +1,128 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .group:hover .group-hover\:block { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        body { padding-top: 80px; } /* Tránh menu che nội dung */
-    </style>
-</head>
-<body>
-    <?php
-    if (session_status() === PHP_SESSION_NONE) session_start();
-    $role = $_SESSION['role'] ?? 'user';
-    $is_admin = in_array($role, ['admin', 'manager']);
-    $current_page = basename($_SERVER['PHP_SELF']); // Lấy tên file hiện tại
-
-    // Định nghĩa Class cho menu Active và Inactive để code gọn hơn
-    $menu_active = "bg-slate-800 border-l-4 border-blue-500 text-blue-400 font-bold shadow-inner";
-    $menu_normal = "text-gray-300 hover:bg-slate-800 hover:text-white border-l-4 border-transparent";
-    ?>
-
-    <?php if ($is_admin): ?>
-        <aside class="fixed top-0 left-0 h-screen w-64 bg-[#1e293b] text-white flex flex-col z-50 shadow-2xl transition-all duration-300">
-            <div class="h-20 flex items-center justify-center border-b border-slate-700 bg-[#0f172a] shadow-md">
-                <h1 class="font-extrabold text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
-                    <i class="fas fa-shield-alt mr-2"></i>ADMIN
-                </h1>
-            </div>
+<nav class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-20">
             
-            <nav class="flex-1 overflow-y-auto py-6 space-y-2">
-                <p class="px-6 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Quản lý chung</p>
-                
-                <a href="../Admin_Screen/Admin_Dashboard.php" 
-                   class="block px-6 py-3 flex items-center gap-3 transition-all duration-200 <?= $current_page == 'Admin_Dashboard.php' ? $menu_active : $menu_normal ?>">
-                    <i class="fas fa-chart-line w-5 text-center"></i> Thống Kê
-                </a>
-
-                <a href="../Admin_Screen/Admin_Products.php" 
-                   class="block px-6 py-3 flex items-center gap-3 transition-all duration-200 <?= $current_page == 'Admin_Products.php' ? $menu_active : $menu_normal ?>">
-                    <i class="fas fa-box-open w-5 text-center"></i> Sản Phẩm
-                </a>
-
-                <a href="../Admin_Screen/Admin_Orders.php" 
-                   class="block px-6 py-3 flex items-center gap-3 transition-all duration-200 <?= strpos($current_page, 'Order') !== false ? $menu_active : $menu_normal ?>">
-                    <i class="fas fa-file-invoice-dollar w-5 text-center"></i> Đơn Hàng
-                </a>
-
-                <a href="../Admin_Screen/Admin_Vouchers.php" 
-                   class="block px-6 py-3 flex items-center gap-3 transition-all duration-200 <?= $current_page == 'Admin_Vouchers.php' ? $menu_active : $menu_normal ?>">
-                    <i class="fas fa-ticket-alt w-5 text-center"></i> Voucher
-                </a>
-
-                <a href="../Admin_Screen/Admin_Reviews.php" 
-                   class="block px-6 py-3 flex items-center gap-3 transition-all duration-200 <?= $current_page == 'Admin_Reviews.php' ? $menu_active : $menu_normal ?>">
-                    <i class="fas fa-comments w-5 text-center"></i> Đánh Giá
-                </a>
-
-                <a href="../Admin_Screen/Admin_Users.php" 
-                   class="block px-6 py-3 flex items-center gap-3 transition-all duration-200 <?= $current_page == 'Admin_Users.php' ? $menu_active : $menu_normal ?>">
-                    <i class="fas fa-users w-5 text-center"></i> Người Dùng
-                </a>
-            </nav>
-
-            <div class="p-4 border-t border-slate-700 bg-[#0f172a]">
-                <a href="../Config/logout.php" class="flex items-center justify-center gap-2 w-full py-3 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600 hover:text-white transition-all duration-300 font-bold text-sm">
-                    <i class="fas fa-sign-out-alt"></i> Đăng Xuất
-                </a>
-            </div>
-        </aside>
-
-    <?php else: ?>
-        <nav class="fixed top-0 left-0 w-full bg-white/95 backdrop-blur-md shadow-sm z-50 transition-all duration-300">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex h-20 items-center justify-between">
-                    <a href="../User_Screen/Home_Screen.php" class="flex items-center gap-2 group">
-                        <img src="../assets/web/logo-removebg.png" class="h-12 w-auto transition-transform group-hover:scale-110">
-                        <span class="font-extrabold text-2xl text-blue-600 tracking-tight">Hydrange</span>
-                    </a>
-
-                    <div class="hidden md:flex items-center space-x-8">
-                        <a href="../User_Screen/Home_Screen.php" class="font-bold text-gray-600 hover:text-blue-600 transition <?= $current_page == 'Home_Screen.php' ? 'text-blue-600' : '' ?>">Trang Chủ</a>
-                        <a href="../User_Screen/Home_Screen.php?sort=newest" class="font-bold text-gray-600 hover:text-blue-600 transition">Sản Phẩm</a>
-                        <a href="../User_Screen/History_Screen.php" class="font-bold text-gray-600 hover:text-blue-600 transition <?= $current_page == 'History_Screen.php' ? 'text-blue-600' : '' ?>">Đơn Hàng</a>
-                    </div>
-
-                    <div class="flex items-center gap-6">
-                        <a href="../User_Screen/Cart_Screen.php" class="relative text-gray-600 hover:text-blue-600 transition transform hover:scale-110">
-                            <i class="fas fa-shopping-cart text-xl"></i>
-                            <?php
-                            $cart_count = 0;
-                            if (isset($_SESSION['user_id'])) {
-                                include_once '../Config/Database.php';
-                                $db = Database::getInstance()->getConnection();
-                                $c_res = $db->query("SELECT COUNT(*) as c FROM cart WHERE user_id = {$_SESSION['user_id']}");
-                                $cart_count = $c_res->fetch_assoc()['c'];
-                            }
-                            if ($cart_count > 0) echo "<span class='absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center animate-bounce'>$cart_count</span>";
-                            ?>
-                        </a>
-
-                        <?php if (isset($_SESSION['user_id'])): ?>
-                            <?php
-                            // LOGIC LẤY ĐIỂM CHUẨN
-                            $uid = $_SESSION['user_id'];
-                            $u_res = $db->query("SELECT username, img, current_points FROM users WHERE id = $uid");
-                            $u_data = $u_res->fetch_assoc();
-                            $name = htmlspecialchars($u_data['username']);
-                            $points = number_format($u_data['current_points']);
-                            $img = $u_data['img'] ?: "https://ui-avatars.com/api/?name=$name&background=0D8ABC&color=fff";
-                            ?>
-                            
-                            <div class="relative group h-full flex items-center cursor-pointer">
-                                <div class="hidden md:flex flex-col items-end mr-3">
-                                    <span class="text-sm font-bold text-gray-700"><?= $name ?></span>
-                                    <span class="text-[10px] font-bold text-yellow-600 bg-yellow-50 px-2 rounded border border-yellow-100"><?= $points ?> pts</span>
-                                </div>
-                                <div class="py-4"> <img src="<?= $img ?>" class="w-10 h-10 rounded-full border border-gray-200 object-cover ring-2 ring-transparent group-hover:ring-blue-300 transition">
-                                </div>
-
-                                <div class="absolute top-[85%] right-0 w-60 pt-2 hidden group-hover:block animate-fade-in-down">
-                                    <div class="bg-white rounded-xl shadow-xl py-2 border border-gray-100 overflow-hidden relative">
-                                        <div class="absolute -top-2 right-4 w-4 h-4 bg-white border-t border-l border-gray-100 transform rotate-45"></div>
-
-                                        <a href="../User_Screen/Account_Screen.php" class="flex items-center px-5 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 text-sm font-medium transition">
-                                            <i class="fas fa-user-circle w-6"></i> Hồ sơ cá nhân
-                                        </a>
-                                        <a href="../User_Screen/VoucherWallet_Screen.php" class="flex items-center px-5 py-3 text-gray-600 hover:bg-orange-50 hover:text-orange-600 text-sm font-bold transition">
-                                            <i class="fas fa-ticket-alt w-6"></i> Kho Voucher
-                                        </a>
-                                        <div class="border-t border-gray-100 mt-2 pt-2">
-                                            <a href="../Config/logout.php" class="flex items-center px-5 py-3 text-red-500 hover:bg-red-50 hover:text-red-600 text-sm font-bold transition">
-                                                <i class="fas fa-sign-out-alt w-6"></i> Đăng xuất
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php else: ?>
-                            <a href="../index.php" class="bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 hover:-translate-y-0.5 transition-all">Đăng Nhập</a>
-                        <?php endif; ?>
-                    </div>
+            <div class="flex-shrink-0 flex items-center gap-3 cursor-pointer group" onclick="window.location.href='../User_Screen/Home_Screen.php'">
+                <div class="relative">
+                    <img class="h-12 w-12 object-contain transition-transform duration-500 group-hover:rotate-12" 
+                         src="../assets/web/logo-removebg.png" 
+                         onerror="this.src='https://cdn-icons-png.flaticon.com/512/3081/3081986.png'" 
+                         alt="Logo">
+                    <div class="absolute -bottom-1 -right-1 bg-green-500 w-3 h-3 rounded-full border-2 border-white"></div>
+                </div>
+                <div class="hidden md:block">
+                    <span class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500 tracking-tight">HYDRANGE</span>
+                    <span class="block text-[10px] text-gray-400 font-medium tracking-widest uppercase -mt-1">Grocery Store</span>
                 </div>
             </div>
-        </nav>
-    <?php endif; ?>
-</body>
-</html>
+
+            <div class="hidden md:flex space-x-10 items-center">
+                <a href="../User_Screen/Home_Screen.php" class="text-gray-600 hover:text-blue-600 font-bold text-sm uppercase tracking-wide transition relative group">
+                    Trang chủ
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="../User_Screen/VoucherWallet_Screen.php" class="text-gray-600 hover:text-orange-500 font-bold text-sm uppercase tracking-wide transition flex items-center gap-1 group">
+                        <i class="fas fa-ticket-alt"></i> Kho Voucher
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="../User_Screen/History_Screen.php" class="text-gray-600 hover:text-blue-600 font-bold text-sm uppercase tracking-wide transition relative group">
+                        Đơn hàng
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                <?php endif; ?>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="../User_Screen/Cart_Screen.php" class="relative group p-2 rounded-full hover:bg-blue-50 transition">
+                    <i class="fas fa-shopping-bag text-2xl text-gray-600 group-hover:text-blue-600 transition"></i>
+                    <?php 
+                        // Logic đếm giỏ hàng
+                        $cart_count = 0;
+                        if(isset($_SESSION['user_id'])) {
+                            // Giả định class Database đã được include ở file cha
+                            $dbConn = Database::getInstance()->getConnection();
+                            $uid = $_SESSION['user_id'];
+                            
+                            // Kiểm tra bảng 'carts' tồn tại (đã sửa tên bảng từ 'cart' thành 'carts' cho đúng chuẩn với các file khác nếu cần, hoặc giữ nguyên nếu bảng là 'cart')
+                            // Ở đây tôi dùng 'cart' theo code gốc của bạn, nếu lỗi hãy đổi thành 'carts'
+                            $cQuery = $dbConn->query("SELECT SUM(quantity) as total FROM cart WHERE user_id = $uid");
+                            if ($cQuery) {
+                                $cRow = $cQuery->fetch_assoc();
+                                $cart_count = $cRow['total'] ?? 0;
+                            }
+                        }
+                    ?>
+                    <?php if($cart_count > 0): ?>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm animate-bounce">
+                            <?= $cart_count > 9 ? '9+' : $cart_count ?>
+                        </span>
+                    <?php endif; ?>
+                </a>
+
+                <div class="relative ml-2 group">
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <?php
+                            // Lấy thông tin img mới nhất từ DB để đảm bảo đồng bộ (phòng trường hợp session chưa update)
+                            $userId = $_SESSION['user_id'];
+                            $dbConn = Database::getInstance()->getConnection();
+                            $userQuery = $dbConn->prepare("SELECT img, username, role FROM users WHERE id = ?");
+                            $userQuery->bind_param("i", $userId);
+                            $userQuery->execute();
+                            $userResult = $userQuery->get_result();
+                            $userData = $userResult->fetch_assoc();
+                            
+                            // Ưu tiên lấy từ DB, nếu không có thì lấy từ Session, cuối cùng là ảnh mặc định
+                            $imgUrl = !empty($userData['img']) ? $userData['img'] : 
+                                         (!empty($_SESSION['img']) ? $_SESSION['img'] : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png');
+                            
+                            // Kiểm tra nếu là đường dẫn nội bộ (không chứa http) thì thêm prefix
+                            if (strpos($imgUrl, 'http') === false) {
+                                $imgUrl = '../assets/uploads/imgs/' . $imgUrl;
+                            }
+                            
+                            $username = $userData['username'] ?? $_SESSION['username'] ?? 'User';
+                            $role = $userData['role'] ?? $_SESSION['role'] ?? 'user';
+                        ?>
+                        <button class="flex items-center gap-2 focus:outline-none">
+                            <img class="h-10 w-10 rounded-full object-cover border-2 border-gray-100 shadow-sm group-hover:border-blue-300 transition" 
+                                 src="<?= htmlspecialchars($imgUrl) ?>" 
+                                 onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'"
+                                 alt="Avatar">
+                        </button>
+                        <div class="absolute right-0 mt-4 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right z-50 top-full">
+                            
+                            <div class="absolute -top-2 right-4 w-4 h-4 bg-white border-t border-l border-gray-100 transform rotate-45"></div>
+
+                            <div class="px-5 py-3 border-b border-gray-50 bg-gray-50/50 rounded-t-xl">
+                                <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider">Tài khoản</p>
+                                <p class="font-bold text-gray-800 truncate"><?= htmlspecialchars($username) ?></p>
+                            </div>
+                            
+                            <a href="../User_Screen/Account_Screen.php" class="flex items-center px-5 py-3 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition">
+                                <i class="fas fa-user-circle w-6"></i> Hồ sơ cá nhân
+                            </a>
+                            
+                            <?php if ($role === 'admin'): ?>
+                                <a href="../Admin_Screen/Admin_Dashboard.php" class="flex items-center px-5 py-3 text-sm text-red-600 hover:bg-red-50 transition font-medium">
+                                    <i class="fas fa-shield-alt w-6"></i> Trang Quản Trị
+                                </a>
+                            <?php endif; ?>
+                            
+                            <div class="border-t border-gray-100 my-1"></div>
+                            
+                            <a href="../Config/logout.php" class="flex items-center px-5 py-3 text-sm text-gray-500 hover:bg-red-50 hover:text-red-600 transition">
+                                <i class="fas fa-sign-out-alt w-6"></i> Đăng xuất
+                            </a>
+                        </div>
+                    <?php else: ?>
+                        <a href="../index.php" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-lg hover:shadow-blue-500/30 transition transform hover:-translate-y-0.5">
+                            Đăng nhập
+                        </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>

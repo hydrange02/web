@@ -1,119 +1,137 @@
 <?php
-// File: Web php/Config/MailHelper.php
-
+// Load các file thư viện PHPMailer thủ công (theo cấu trúc thư mục của bạn)
 require_once __DIR__ . '/../PHPMailer/src/Exception.php';
 require_once __DIR__ . '/../PHPMailer/src/PHPMailer.php';
 require_once __DIR__ . '/../PHPMailer/src/SMTP.php';
+require_once __DIR__ . '/Env.php'; // Load biến môi trường
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 class MailHelper {
-    
-    // CẤU HÌNH GMAIL SMTP
-    private static $SMTP_HOST = 'smtp.gmail.com';
-    private static $SMTP_USER = 'hydrange02@gmail.com'; 
-    private static $SMTP_PASS = 'rsjz nuep rygo ppqq'; 
-    private static $SMTP_PORT = 587;
 
-    // Hàm gửi mail cơ bản (Private)
-    private static function send($to, $subject, $body) {
+    /**
+     * Gửi Email với giao diện HTML đẹp mắt (Responsive Template)
+     * * @param string $to Email người nhận
+     * @param string $subject Tiêu đề Email (hiển thị ở inbox)
+     * @param string $title Tiêu đề lớn trong nội dung thư (Header)
+     * @param string $bodyContent Nội dung chính (có thể chứa HTML thẻ p, b, a...)
+     * @return array ['success' => bool, 'message' => string]
+     */
+    public static function sendCustomMail($to, $subject, $title, $bodyContent) {
+        // Load cấu hình từ file .env
+        
+        
         $mail = new PHPMailer(true);
+
         try {
+            // 1. Cấu hình Server (SMTP)
             $mail->isSMTP();
-            $mail->Host       = self::$SMTP_HOST;
+            $mail->Host       = Env::get('SMTP_HOST') ?: 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Username   = self::$SMTP_USER;
-            $mail->Password   = self::$SMTP_PASS;
+            $mail->Username   = Env::get('SMTP_USER'); // Email của bạn
+            $mail->Password   = Env::get('SMTP_PASS'); // Mật khẩu ứng dụng
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = self::$SMTP_PORT;
+            $mail->Port       = Env::get('SMTP_PORT') ?: 587;
             $mail->CharSet    = 'UTF-8';
 
-            $mail->setFrom(self::$SMTP_USER, 'Hydrange Shop'); // Tên người gửi đẹp hơn
+            // 2. Người gửi & Người nhận
+            $mail->setFrom(Env::get('SMTP_USER'), 'Hydrange Shop Support');
             $mail->addAddress($to);
 
+            // 3. Xây dựng Template HTML
+            // Lưu ý: Email Client hỗ trợ CSS nội tuyến (inline style) tốt nhất.
+            
+            $year = date('Y');
+            // Bạn có thể thay đường dẫn logo bên dưới bằng link ảnh online của shop bạn
+            $logoUrl = "https://res.cloudinary.com/dxnynxcxx/image/upload/v1765344169/msbwq7e8e6ukmlltkq2o.png"; 
+
+            $htmlTemplate = <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$subject</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+    
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f3f4f6; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                
+                <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    
+                    <tr>
+                        <td align="center" style="background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%); padding: 30px 20px;">
+                            <img src="$logoUrl" alt="Hydrange Shop" width="64" height="64" style="display: block; margin-bottom: 15px; border-radius: 50%; bg-color: white; padding: 5px;">
+                            
+                            <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 700; letter-spacing: 0.5px;">
+                                $title
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 40px 30px; color: #334155; font-size: 16px; line-height: 1.6;">
+                            
+                            $bodyContent
+                            
+                            <br><br>
+                            <p style="margin: 0; color: #64748b; font-size: 14px;">
+                                Trân trọng,<br>
+                                <strong>Đội ngũ Hydrange Shop</strong>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="border-top: 1px solid #e2e8f0;"></td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="background-color: #f8fafc; padding: 20px; color: #94a3b8; font-size: 12px;">
+                            <p style="margin: 5px 0;">
+                                &copy; $year Hydrange Shop. All rights reserved.
+                            </p>
+                            <p style="margin: 5px 0;">
+                                Đây là email tự động, vui lòng không trả lời email này.<br>
+                                Nếu cần hỗ trợ, hãy liên hệ hotline: <a href="tel:1900xxxx" style="color: #2563eb; text-decoration: none;">1900 xxxx</a>
+                            </p>
+                            
+                            <div style="margin-top: 10px;">
+                                <a href="#" style="margin: 0 5px;"><img src="https://cdn-icons-png.flaticon.com/128/733/733547.png" width="20" alt="Facebook"></a>
+                                <a href="#" style="margin: 0 5px;"><img src="https://cdn-icons-png.flaticon.com/128/2111/2111463.png" width="20" alt="Instagram"></a>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <p style="text-align: center; color: #9ca3af; font-size: 12px; margin-top: 20px;">
+                    Hydrange Shop - Mang cả thế giới đến ngôi nhà của bạn
+                </p>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>
+HTML;
+
+            // 4. Thiết lập nội dung email
             $mail->isHTML(true);
             $mail->Subject = $subject;
-            $mail->Body    = $body;
+            $mail->Body    = $htmlTemplate;
+            $mail->AltBody = strip_tags($bodyContent); // Nội dung dự phòng cho client không hỗ trợ HTML
 
             $mail->send();
-            return true;
+            return ['success' => true, 'message' => 'Email đã được gửi thành công.'];
+
         } catch (Exception $e) {
-            error_log("Mail Error: {$mail->ErrorInfo}");
-            return false;
+            // Log lỗi vào file server nếu cần
+            // error_log($mail->ErrorInfo);
+            return ['success' => false, 'message' => "Không thể gửi email. Lỗi: {$mail->ErrorInfo}"];
         }
-    }
-
-    // 1. Email Xác Thực Tài Khoản (Giữ nguyên nhưng làm đẹp code chút)
-    public static function sendVerificationEmail($email, $token) {
-        $link = "http://localhost/Web%20php/Config/verify_email.php?email=$email&token=$token";
-        
-        // Giao diện Email Verification
-        $body = "
-        <div style='font-family: Helvetica, Arial, sans-serif; min-width:1000px; overflow:auto; line-height:2'>
-          <div style='margin:50px auto; width:70%; padding:20px 0'>
-            <div style='border-bottom:1px solid #eee'>
-              <a href='' style='font-size:1.4em; color: #00466a; text-decoration:none; font-weight:600'>Hydrange Shop</a>
-            </div>
-            <p style='font-size:1.1em'>Xin chào,</p>
-            <p>Cảm ơn bạn đã đăng ký tài khoản tại Hydrange Shop. Vui lòng nhấn vào nút bên dưới để xác thực email của bạn.</p>
-            <a href='$link' style='background: #00466a; margin: 0 auto; width: max-content; display: block; border-radius: 4px; color: #fff; padding: 12px 30px; text-decoration: none; font-weight: bold;'>Xác Thực Ngay</a>
-            <p style='font-size:0.9em;'>Link này sẽ hết hạn sau 24 giờ.<br />Nếu bạn không yêu cầu, vui lòng bỏ qua email này.</p>
-            <hr style='border:none;border-top:1px solid #eee' />
-            <div style='float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300'>
-              <p>Hydrange Shop Inc</p>
-              <p>123 Đường ABC, TP.HCM</p>
-              <p>Vietnam</p>
-            </div>
-          </div>
-        </div>";
-        
-        return self::send($email, "Xác thực tài khoản", $body);
-    }
-
-    // 2. Email Mã OTP (ĐÃ NÂNG CẤP GIAO DIỆN)
-    public static function sendOtpEmail($email, $otp, $title = "Mã xác thực OTP", $msg = "Sử dụng mã OTP bên dưới để hoàn tất yêu cầu của bạn.") {
-        $body = "
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset='UTF-8'>
-            <style>
-                .container { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; padding: 40px; }
-                .card { max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-                .header { background: linear-gradient(135deg, #4f46e5, #3b82f6); padding: 30px; text-align: center; }
-                .header h1 { margin: 0; color: #ffffff; font-size: 24px; letter-spacing: 1px; text-transform: uppercase; }
-                .content { padding: 40px 30px; color: #333; text-align: center; }
-                .otp-box { background-color: #f0f7ff; border: 2px dashed #3b82f6; color: #1d4ed8; font-size: 36px; font-weight: 800; padding: 20px; margin: 30px 0; letter-spacing: 8px; border-radius: 8px; display: inline-block; }
-                .footer { background-color: #f9fafb; padding: 20px; text-align: center; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; }
-                .warning { color: #ef4444; font-size: 13px; margin-top: 20px; }
-            </style>
-        </head>
-        <body>
-            <div class='container'>
-                <div class='card'>
-                    <div class='header'>
-                        <h1>Hydrange Security</h1>
-                    </div>
-                    <div class='content'>
-                        <h2 style='color: #1f2937; margin-top: 0;'>$title</h2>
-                        <p style='font-size: 15px; line-height: 1.5; color: #4b5563;'>$msg</p>
-                        
-                        <div class='otp-box'>$otp</div>
-                        
-                        <p class='warning'>⚠️ Tuyệt đối không chia sẻ mã này với bất kỳ ai, kể cả nhân viên hỗ trợ.</p>
-                        <p style='font-size: 13px; color: #9ca3af;'>Mã có hiệu lực trong <strong>15 phút</strong>.</p>
-                    </div>
-                    <div class='footer'>
-                        <p>&copy; " . date('Y') . " Hydrange Shop. All rights reserved.</p>
-                        <p>Đây là email tự động, vui lòng không trả lời.</p>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>";
-
-        return self::send($email, $title . " - Hydrange Shop", $body);
     }
 }
 ?>

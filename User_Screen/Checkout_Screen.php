@@ -4,12 +4,84 @@ session_start();
 include '../Config/Database.php';
 
 $user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id) {
+    header('Location: ../index.php'); // Chưa đăng nhập thì về trang chủ/login
+    exit;
+}
 
-// --- 1. NHẬN DỮ LIỆU ---
-$cart_ids_str = $_POST['cart_ids'] ?? '';
+$db = Database::getInstance()->getConnection();
 
-if (!$user_id || empty($cart_ids_str)) {
-    header('Location: Cart_Screen.php');
+// --- 1. NHẬN DỮ LIỆU (LOGIC MỚI: HỖ TRỢ CẢ MUA NGAY & GIỎ HÀNG) ---
+$items = [];
+$grand_total = 0;
+$is_buy_now = false; // Cờ đánh dấu chế độ mua ngay
+$cart_ids_str = '';
+
+// Kiểm tra: Nếu có tham số action=buynow trên URL -> Là Mua Ngay
+if (isset($_GET['action']) && $_GET['action'] == 'buynow' && isset($_GET['id'])) {
+    // === TRƯỜNG HỢP 1: MUA NGAY (KHÔNG QUA GIỎ) ===
+    $is_buy_now = true;
+    $item_id = intval($_GET['id']);
+    $buy_qty = isset($_GET['qty']) ? max(1, intval($_GET['qty'])) : 1;
+
+    // Lấy thông tin sản phẩm trực tiếp từ bảng items
+    $stmt = $db->prepare("SELECT id, name, price, image FROM items WHERE id = ?");
+    $stmt->bind_param("i", $item_id);
+    $stmt->execute();
+    $res = $stmt->get_result()->fetch_assoc();
+
+    if ($res) {
+        // Tạo cấu trúc dữ liệu giống hệt như lấy từ giỏ hàng để bên dưới không bị lỗi
+        $items[] = [
+            'item_id' => $res['id'],
+            'name' => $res['name'],
+            'price' => $res['price'],
+            'image' => $res['image'],
+            'quantity' => $buy_qty,
+            'total' => $res['price'] * $buy_qty
+        ];
+    }
+    $stmt->close();
+} else {
+    // === TRƯỜNG HỢP 2: MUA TỪ GIỎ HÀNG (LOGIC CŨ) ===
+    // Hỗ trợ nhận từ cả POST (form) và GET (nếu redirect)
+    $cart_ids_str = $_POST['cart_ids'] ?? ($_GET['cart_ids'] ?? '');
+
+    if (empty($cart_ids_str)) {
+        header('Location: Cart_Screen.php'); // Không có dữ liệu thì quay về giỏ
+        exit;
+    }
+
+    $cart_ids_array = array_map('intval', explode(',', $cart_ids_str));
+    if (!empty($cart_ids_array)) {
+        $placeholders = str_repeat('?,', count($cart_ids_array) - 1) . '?';
+        $types = str_repeat('i', count($cart_ids_array));
+        $params = $cart_ids_array;
+        $params[] = $user_id; // Thêm user_id để bảo mật
+        $types .= 'i';
+
+        // Câu query giữ nguyên như cũ của bạn
+        $sql = "SELECT c.quantity, c.total, i.id as item_id, i.name, i.price, i.image 
+                FROM cart c 
+                JOIN items i ON c.item_id = i.id 
+                WHERE c.id IN ($placeholders) AND c.user_id = ?";
+
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $items = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+    }
+}
+
+// Tính tổng tiền
+foreach ($items as $item) {
+    $grand_total += $item['total'];
+}
+
+// Nếu không có sản phẩm nào -> báo lỗi
+if (empty($items)) {
+    echo "<script>alert('Sản phẩm không hợp lệ!'); window.location.href='Home_Screen.php';</script>";
     exit;
 }
 
@@ -19,39 +91,13 @@ if (empty($_SESSION['csrf_token'])) {
 }
 $csrf_token = $_SESSION['csrf_token'];
 
-$db = Database::getInstance()->getConnection();
-
-// Lấy thông tin user mặc định
+// Lấy thông tin user
 $userQuery = $db->prepare("SELECT username, phone FROM users WHERE id = ?");
 $userQuery->bind_param("i", $user_id);
 $userQuery->execute();
 $userInfo = $userQuery->get_result()->fetch_assoc();
 
-// Lấy sản phẩm thanh toán
-$cart_ids_array = array_map('intval', explode(',', $cart_ids_str));
-$placeholders = str_repeat('?,', count($cart_ids_array) - 1) . '?';
-$types = str_repeat('i', count($cart_ids_array));
-$params = $cart_ids_array;
-$params[] = $user_id;
-$types .= 'i';
-
-$sql = "SELECT c.quantity, c.total, i.name, i.price, i.image 
-        FROM cart c 
-        JOIN items i ON c.item_id = i.id 
-        WHERE c.id IN ($placeholders) AND c.user_id = ?";
-
-$stmt = $db->prepare($sql);
-$stmt->bind_param($types, ...$params);
-$stmt->execute();
-$items = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-
-$grand_total = 0;
-foreach ($items as $item) {
-    $grand_total += $item['total'];
-}
-
-// --- 3. LẤY DANH SÁCH VOUCHER CỦA TÔI (SỬA LOGIC DATE) ---
-// Lấy các voucher chưa dùng, còn hạn (hoặc vĩnh viễn), và đã phát hành
+// --- 3. LẤY DANH SÁCH VOUCHER ---
 $v_sql = "SELECT uv.id, v.code, v.discount_type, v.discount_amount, v.min_order_amount, v.end_date 
           FROM user_vouchers uv
           JOIN vouchers v ON uv.voucher_id = v.id
@@ -71,12 +117,25 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 <head>
     <title>Thanh Toán - Hydrange Shop</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
-        .input-group:focus-within label, .input-group:focus-within i { color: #2563eb; }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .input-group:focus-within label,
+        .input-group:focus-within i {
+            color: #2563eb;
+        }
+
         .voucher-ticket {
             background-image: radial-gradient(circle at 0 50%, transparent 6px, #fff 6px), radial-gradient(circle at 100% 50%, transparent 6px, #fff 6px);
             background-size: 50% 100%;
@@ -96,7 +155,14 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
         <form id="checkout-form" action="../Config/checkout.php" method="POST" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
-            <input type="hidden" name="cart_ids" value="<?= htmlspecialchars($cart_ids_str) ?>">
+
+            <?php if (isset($is_buy_now) && $is_buy_now): ?>
+                <input type="hidden" name="action" value="buynow">
+                <input type="hidden" name="item_id" value="<?= $items[0]['item_id'] ?>">
+                <input type="hidden" name="quantity" value="<?= $items[0]['quantity'] ?>">
+            <?php else: ?>
+                <input type="hidden" name="cart_ids" value="<?= htmlspecialchars($cart_ids_str) ?>">
+            <?php endif; ?>
 
             <div class="lg:col-span-7 flex flex-col gap-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
@@ -296,7 +362,7 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                         $cursor = $is_eligible ? 'cursor-pointer hover:shadow-md' : 'cursor-not-allowed';
                         $click_action = $is_eligible ? "selectVoucher('{$v['code']}')" : "";
                         $status_text = $is_eligible ? '<span class="text-green-600 text-xs font-bold">Có thể dùng</span>' : '<span class="text-red-500 text-xs font-bold">Chưa đủ điều kiện</span>';
-                        $date_text = !empty($v['end_date']) ? 'HSD: '.date('d/m/Y', strtotime($v['end_date'])) : 'Vĩnh viễn';
+                        $date_text = !empty($v['end_date']) ? 'HSD: ' . date('d/m/Y', strtotime($v['end_date'])) : 'Vĩnh viễn';
                     ?>
                         <div class="bg-white border border-gray-200 rounded-lg flex overflow-hidden relative transition <?= $opacity ?> <?= $cursor ?>" onclick="<?= $click_action ?>">
                             <div class="w-24 bg-gray-800 text-white flex flex-col items-center justify-center p-2 relative voucher-ticket">
@@ -332,15 +398,23 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             const address = document.getElementById('r_address').value.trim();
 
             if (!name || !phone || !address) {
-                e.preventDefault(); 
-                Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng nhập đầy đủ Họ tên, Số điện thoại và Địa chỉ nhận hàng!' });
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Thiếu thông tin',
+                    text: 'Vui lòng nhập đầy đủ Họ tên, Số điện thoại và Địa chỉ nhận hàng!'
+                });
                 return;
             }
 
-            const phoneRegex = /^(0|\+84)[0-9]{9,10}$/; 
+            const phoneRegex = /^(0|\+84)[0-9]{9,10}$/;
             if (!phoneRegex.test(phone)) {
-                e.preventDefault(); 
-                Swal.fire({ icon: 'error', title: 'Số điện thoại không hợp lệ', text: 'Vui lòng nhập đúng định dạng số điện thoại (10-11 số).' });
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Số điện thoại không hợp lệ',
+                    text: 'Vui lòng nhập đúng định dạng số điện thoại (10-11 số).'
+                });
                 document.getElementById('r_phone').focus();
                 document.getElementById('r_phone').classList.add('ring-2', 'ring-red-500');
                 return;
@@ -357,14 +431,22 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             const subTotal = parseInt(document.getElementById('sub-total').dataset.value);
             const msg = document.getElementById('voucher_message');
 
-            if (!code) { msg.className = "text-xs mt-2 text-red-500 font-bold"; msg.innerText = "Vui lòng nhập mã voucher!"; return; }
-            msg.className = "text-xs mt-2 text-gray-500 italic"; msg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang kiểm tra...';
+            if (!code) {
+                msg.className = "text-xs mt-2 text-red-500 font-bold";
+                msg.innerText = "Vui lòng nhập mã voucher!";
+                return;
+            }
+            msg.className = "text-xs mt-2 text-gray-500 italic";
+            msg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang kiểm tra...';
 
             try {
                 const formData = new FormData();
                 formData.append('code', code);
                 formData.append('total_order', subTotal);
-                const res = await fetch('../Config/check_voucher.php', { method: 'POST', body: formData });
+                const res = await fetch('../Config/check_voucher.php', {
+                    method: 'POST',
+                    body: formData
+                });
                 const data = await res.json();
 
                 if (data.success) {
@@ -378,7 +460,9 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                     document.getElementById('discount-display').innerText = `-0đ`;
                     updateFinalTotal(0);
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         function updateFinalTotal(discount) {
@@ -389,26 +473,48 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             document.getElementById('final-total').innerText = new Intl.NumberFormat('vi-VN').format(final) + 'đ';
         }
 
-        function toggleBankInfo(show) { document.getElementById('bank-info').classList.toggle('hidden', !show); }
-        
+        function toggleBankInfo(show) {
+            document.getElementById('bank-info').classList.toggle('hidden', !show);
+        }
+
         const modal = document.getElementById('address-modal');
         const viewList = document.getElementById('view-list');
         const viewForm = document.getElementById('view-form');
         const listContainer = document.getElementById('address-list-container');
 
-        function openAddressModal() { modal.classList.remove('hidden'); showList(); loadAddresses(); }
-        function closeAddressModal() { modal.classList.add('hidden'); }
-        function showList() { viewList.classList.remove('-translate-x-full'); viewForm.classList.add('translate-x-full'); }
-        
-        function showAddForm() { 
-            document.getElementById('form-title').innerText = 'THÊM ĐỊA CHỈ MỚI'; document.getElementById('edit_id').value = '0';
-            document.getElementById('input_name').value = ''; document.getElementById('input_phone').value = ''; document.getElementById('input_address').value = '';
-            viewList.classList.add('-translate-x-full'); viewForm.classList.remove('translate-x-full'); 
+        function openAddressModal() {
+            modal.classList.remove('hidden');
+            showList();
+            loadAddresses();
         }
+
+        function closeAddressModal() {
+            modal.classList.add('hidden');
+        }
+
+        function showList() {
+            viewList.classList.remove('-translate-x-full');
+            viewForm.classList.add('translate-x-full');
+        }
+
+        function showAddForm() {
+            document.getElementById('form-title').innerText = 'THÊM ĐỊA CHỈ MỚI';
+            document.getElementById('edit_id').value = '0';
+            document.getElementById('input_name').value = '';
+            document.getElementById('input_phone').value = '';
+            document.getElementById('input_address').value = '';
+            viewList.classList.add('-translate-x-full');
+            viewForm.classList.remove('translate-x-full');
+        }
+
         function showEditForm(id, name, phone, addr) {
-            document.getElementById('form-title').innerText = 'CẬP NHẬT ĐỊA CHỈ'; document.getElementById('edit_id').value = id;
-            document.getElementById('input_name').value = name; document.getElementById('input_phone').value = phone; document.getElementById('input_address').value = addr;
-            viewList.classList.add('-translate-x-full'); viewForm.classList.remove('translate-x-full');
+            document.getElementById('form-title').innerText = 'CẬP NHẬT ĐỊA CHỈ';
+            document.getElementById('edit_id').value = id;
+            document.getElementById('input_name').value = name;
+            document.getElementById('input_phone').value = phone;
+            document.getElementById('input_address').value = addr;
+            viewList.classList.add('-translate-x-full');
+            viewForm.classList.remove('translate-x-full');
         }
 
         async function loadAddresses() {
@@ -416,7 +522,10 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                 listContainer.innerHTML = '<p class="text-center text-gray-400 py-4"><i class="fas fa-spinner fa-spin"></i> Đang tải...</p>';
                 const res = await fetch('../Config/get_addresses.php');
                 const data = await res.json();
-                if (data.length === 0) { listContainer.innerHTML = '<div class="text-center text-gray-400 italic py-10"><p>Chưa có địa chỉ nào</p></div>'; return; }
+                if (data.length === 0) {
+                    listContainer.innerHTML = '<div class="text-center text-gray-400 italic py-10"><p>Chưa có địa chỉ nào</p></div>';
+                    return;
+                }
                 listContainer.innerHTML = data.map(addr => `
                     <div class="group p-4 border border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50/30 transition relative bg-white shadow-sm">
                         <div class="cursor-pointer" onclick="selectAddress('${addr.recipient_name}', '${addr.phone}', '${addr.address}')">
@@ -432,33 +541,60 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                             <button onclick="deleteAddress(${addr.id})" class="w-7 h-7 flex items-center justify-center bg-gray-100 hover:bg-red-500 hover:text-white rounded-full text-gray-500 text-xs transition"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>`).join('');
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         async function saveAddress() {
-            const id = document.getElementById('edit_id').value, name = document.getElementById('input_name').value.trim(),
-                  phone = document.getElementById('input_phone').value.trim(), address = document.getElementById('input_address').value.trim();
+            const id = document.getElementById('edit_id').value,
+                name = document.getElementById('input_name').value.trim(),
+                phone = document.getElementById('input_phone').value.trim(),
+                address = document.getElementById('input_address').value.trim();
             if (!name || !phone || !address) return Swal.fire('Thiếu thông tin', '', 'warning');
-            const formData = new FormData(); formData.append('id', id); formData.append('name', name); formData.append('phone', phone); formData.append('address', address);
+            const formData = new FormData();
+            formData.append('id', id);
+            formData.append('name', name);
+            formData.append('phone', phone);
+            formData.append('address', address);
             const apiUrl = (id === '0') ? '../Config/add_address.php' : '../Config/edit_address.php';
             try {
-                const res = await fetch(apiUrl, { method: 'POST', body: formData });
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    body: formData
+                });
                 const data = await res.json();
-                if (data.success) { selectAddress(name, phone, address); loadAddresses(); showList(); } 
-                else Swal.fire('Lỗi', data.message, 'error');
-            } catch (e) { console.error(e); }
+                if (data.success) {
+                    selectAddress(name, phone, address);
+                    loadAddresses();
+                    showList();
+                } else Swal.fire('Lỗi', data.message, 'error');
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         async function deleteAddress(id) {
-            if (await Swal.fire({title: 'Xóa địa chỉ?', icon: 'warning', showCancelButton: true}).then(r => r.isConfirmed)) {
-                const formData = new FormData(); formData.append('id', id);
-                const res = await fetch('../Config/delete_address.php', { method: 'POST', body: formData });
+            if (await Swal.fire({
+                    title: 'Xóa địa chỉ?',
+                    icon: 'warning',
+                    showCancelButton: true
+                }).then(r => r.isConfirmed)) {
+                const formData = new FormData();
+                formData.append('id', id);
+                const res = await fetch('../Config/delete_address.php', {
+                    method: 'POST',
+                    body: formData
+                });
                 if ((await res.json()).success) loadAddresses();
             }
         }
 
         async function calculateShipping(address) {
-            const shippingEl = document.getElementById('shipping-fee'), finalEl = document.getElementById('final-total'), inputShip = document.getElementById('input_shipping_fee'), subTotal = parseInt(document.getElementById('sub-total').dataset.value);
+            const shippingEl = document.getElementById('shipping-fee'),
+                finalEl = document.getElementById('final-total'),
+                inputShip = document.getElementById('input_shipping_fee'),
+                subTotal = parseInt(document.getElementById('sub-total').dataset.value);
             shippingEl.innerText = 'Đang tính...';
             try {
                 const res = await fetch(`../Config/get_shipping_fee.php?address=${encodeURIComponent(address)}`);
@@ -471,21 +607,50 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                 let discount = parseInt(discountText) || 0;
                 const finalTotal = Math.max(0, subTotal + fee - discount);
                 finalEl.innerText = new Intl.NumberFormat('vi-VN').format(finalTotal) + 'đ';
-            } catch (e) { shippingEl.innerText = '30.000đ'; }
+            } catch (e) {
+                shippingEl.innerText = '30.000đ';
+            }
         }
 
         function selectAddress(name, phone, addr) {
-            document.getElementById('r_name').value = name; document.getElementById('r_phone').value = phone; document.getElementById('r_address').value = addr;
-            closeAddressModal(); calculateShipping(addr);
+            document.getElementById('r_name').value = name;
+            document.getElementById('r_phone').value = phone;
+            document.getElementById('r_address').value = addr;
+            closeAddressModal();
+            calculateShipping(addr);
         }
-        
-        function openVoucherModal() { document.getElementById('voucher-modal').classList.remove('hidden'); }
-        function closeVoucherModal() { document.getElementById('voucher-modal').classList.add('hidden'); }
-        function selectVoucher(code) { document.getElementById('voucher_code_input').value = code; closeVoucherModal(); checkVoucher(); }
 
-        document.addEventListener('DOMContentLoaded', () => { const addr = document.getElementById('r_address').value; if(addr) calculateShipping(addr); });
+        function openVoucherModal() {
+            document.getElementById('voucher-modal').classList.remove('hidden');
+        }
+
+        function closeVoucherModal() {
+            document.getElementById('voucher-modal').classList.add('hidden');
+        }
+
+        function selectVoucher(code) {
+            document.getElementById('voucher_code_input').value = code;
+            closeVoucherModal();
+            checkVoucher();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const addr = document.getElementById('r_address').value;
+            if (addr) calculateShipping(addr);
+        });
+        const addressInput = document.getElementById('r_address');
+        if (addressInput) {
+            // Sự kiện 'change' sẽ chạy khi người dùng nhập xong và click ra ngoài ô text
+            addressInput.addEventListener('change', function() {
+                const address = this.value.trim();
+                if (address) {
+                    calculateShipping(address);
+                }
+            });
+        }
     </script>
 
     <?php include '../Compoment/Footer.php'; ?>
 </body>
+
 </html>

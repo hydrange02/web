@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     $checkUser->close();
 
-    // Check Email (Đây là đoạn bạn yêu cầu: Kiểm tra email có trong DB chưa)
+    // Check Email
     $checkEmail = $db->prepare("SELECT id FROM users WHERE email = ?");
     $checkEmail->bind_param('s', $email);
     $checkEmail->execute();
@@ -62,13 +62,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_param("ssssiss", $username, $hashed_password, $email, $default_role, $is_verified, $token, $expire);
 
     if ($stmt->execute()) {
-        // 5. Gửi mail xác thực
-        if (MailHelper::sendVerificationEmail($email, $token)) {
+        
+        // --- SỬA ĐỔI: Soạn nội dung và gọi hàm sendCustomMail ---
+        
+        // Tạo link xác thực (Chú ý sửa domain/thư mục cho đúng với máy của bạn)
+        // Ví dụ: http://localhost/Web%20php/Config/verify_email.php?token=...
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+        $host = $_SERVER['HTTP_HOST'];
+        $path = "/Web%20php/Config/verify_email.php"; // Hãy kiểm tra kỹ đường dẫn này trên máy bạn
+        $verifyLink = "$protocol://$host$path?token=$token";
+
+        $subject = "Xác thực tài khoản đăng ký";
+        $title = "Chào mừng $username!";
+        
+        $bodyContent = "
+            <p>Cảm ơn bạn đã đăng ký tài khoản tại Hydrange Shop.</p>
+            <p>Để kích hoạt tài khoản, vui lòng nhấn vào nút bên dưới:</p>
+            
+            <div style='text-align: center; margin: 30px 0;'>
+                <a href='$verifyLink' style='background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block;'>
+                    Kích Hoạt Tài Khoản
+                </a>
+            </div>
+        ";
+
+        // Gọi hàm sendCustomMail đã có trong MailHelper
+        $mailResult = MailHelper::sendCustomMail($email, $subject, $title, $bodyContent);
+        
+        if ($mailResult['success']) {
             echo json_encode(["success"=>true, "message"=>"Đăng ký thành công! Vui lòng kiểm tra Email để kích hoạt tài khoản."]);
         } else {
-            // Trường hợp lưu DB được nhưng gửi mail lỗi -> Vẫn báo thành công nhưng cảnh báo
-            echo json_encode(["success"=>true, "message"=>"Đăng ký thành công nhưng không gửi được email. Hãy thử đăng nhập và yêu cầu gửi lại."]);
+            echo json_encode(["success"=>true, "message"=>"Đăng ký thành công nhưng không gửi được email. Lỗi: " . $mailResult['message']]);
         }
+        // --- KẾT THÚC SỬA ĐỔI ---
+
     } else {
         echo json_encode(["success"=>false, "message"=>"Lỗi hệ thống: " . $stmt->error]);
     }

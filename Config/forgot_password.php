@@ -29,26 +29,40 @@ if ($action === 'send_otp') {
     $update->bind_param("sss", $otp, $expire, $email);
     
     if ($update->execute()) {
-        // Gọi hàm gửi mail đẹp
-        $sent = MailHelper::sendOtpEmail(
-            $email, 
-            $otp, 
-            "Khôi phục tài khoản", 
-            "Bạn đang thực hiện yêu cầu lấy lại mật khẩu. Hãy sử dụng mã bên dưới để đặt lại mật khẩu mới:"
-        );
+        // --- BẮT ĐẦU SỬA ĐỔI ---
+        $subject = "Khôi phục tài khoản Hydrange Shop";
+        $title = "Quên Mật Khẩu?";
+        
+        $bodyContent = "
+            <p>Bạn vừa yêu cầu lấy lại mật khẩu cho tài khoản liên kết với email này.</p>
+            <p>Đây là mã xác thực (OTP) của bạn:</p>
+            
+            <div style='text-align: center; margin: 30px 0;'>
+                <span style='background-color: #fef3c7; color: #d97706; padding: 15px 30px; font-size: 24px; font-weight: bold; letter-spacing: 5px; border-radius: 8px; border: 1px dashed #d97706;'>
+                    $otp
+                </span>
+            </div>
+            
+            <p>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.</p>
+        ";
 
-        if ($sent) {
+        // Gọi hàm gửi mail mới
+        $result = MailHelper::sendCustomMail($email, $subject, $title, $bodyContent);
+
+        if ($result['success']) {
             echo json_encode(['success' => true, 'message' => 'Đã gửi mã OTP! Vui lòng kiểm tra email.']);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Lỗi gửi email.']);
+            echo json_encode(['success' => false, 'message' => 'Lỗi gửi email: ' . $result['message']]);
         }
+        // --- KẾT THÚC SỬA ĐỔI ---
+        
     } else {
         echo json_encode(['success' => false, 'message' => 'Lỗi hệ thống.']);
     }
 }
 
 elseif ($action === 'reset_pass') {
-    // Logic đặt lại mật khẩu giữ nguyên như cũ
+    // Logic đặt lại mật khẩu giữ nguyên (không liên quan đến gửi mail)
     $email = trim($_POST['email'] ?? '');
     $otp = trim($_POST['otp'] ?? '');
     $new_pass = $_POST['password'] ?? '';

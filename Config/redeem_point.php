@@ -15,8 +15,11 @@ try {
     $db->begin_transaction();
 
     // 1. Lấy thông tin
-    $u_res = $db->query("SELECT current_points FROM users WHERE id = $user_id");
-    $user = $u_res->fetch_assoc();
+    $u_stmt = $db->prepare("SELECT current_points FROM users WHERE id = ? FOR UPDATE");
+    $u_stmt->bind_param("i", $user_id);
+    $u_stmt->execute();
+    $user = $u_stmt->get_result()->fetch_assoc();
+    $u_stmt->close();
     
     $v_stmt = $db->prepare("SELECT * FROM vouchers WHERE id = ? FOR UPDATE");
     $v_stmt->bind_param("i", $voucher_id);

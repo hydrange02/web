@@ -5,7 +5,7 @@ include '../Config/Database.php';
 include '../Compoment/Menu.php';
 
 $user_id = $_SESSION['user_id'] ?? null;
-$role = $_SESSION['role'] ?? 'user'; // Lấy thêm Role
+$role = $_SESSION['role'] ?? 'user';
 $order_id = $_GET['order_id'] ?? null;
 
 if (!$user_id || !$order_id) {
@@ -15,14 +15,12 @@ if (!$user_id || !$order_id) {
 
 $db = Database::getInstance()->getConnection();
 
-// --- SỬA LOGIC KIỂM TRA QUYỀN ---
+// --- LOGIC KIỂM TRA QUYỀN ---
 if ($role === 'admin' || $role === 'manager') {
-    // Nếu là Admin/Manager: Cho phép xem mọi đơn hàng theo ID
     $sql_order = "SELECT * FROM orders WHERE id = ?";
     $stmt = $db->prepare($sql_order);
     $stmt->bind_param("i", $order_id);
 } else {
-    // Nếu là User thường: Chỉ xem đơn của chính mình
     $sql_order = "SELECT * FROM orders WHERE id = ? AND user_id = ?";
     $stmt = $db->prepare($sql_order);
     $stmt->bind_param("ii", $order_id, $user_id);
@@ -34,29 +32,36 @@ $order = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if (!$order) {
-    echo "<div class=' p-10 text-center text-2xl font-bold text-red-600'>
+    echo "<div class='p-10 text-center text-2xl font-bold text-red-600'>
             Đơn hàng không tồn tại hoặc bạn không có quyền xem!
           </div>";
     exit;
 }
 
 $status_class = strtolower(str_replace(' ', '-', $order['status']));
+// Fix class mapping nếu tên trạng thái có dấu tiếng Việt phức tạp
+if($order['status'] == 'Đã hủy') $status_class = 'canceled';
+if($order['status'] == 'Đang chờ xác nhận') $status_class = 'pending';
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <title>Chi Tiết Đơn Hàng #<?= htmlspecialchars($order_id) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        body { font-family: 'Quicksand', sans-serif; }
         .status-processing { background-color: #fca5a5; color: #b91c1c; }
-        .status-delivered { background-color: #a7f3d0; color: #047857; }
-        .status-canceled { background-color: #d1d5db; color: #4b5563; }
-        .status-shipped { background-color: #bfdbfe; color: #1d4ed8; }
-        .status-pending { background-color: #fef08a; color: #854d0e; } /* Màu vàng cho trạng thái chờ */
+        .status-delivered, .status-giao-hàng-thành-công { background-color: #a7f3d0; color: #047857; }
+        .status-canceled, .status-đã-hủy { background-color: #d1d5db; color: #4b5563; }
+        .status-shipped, .status-đang-vận-chuyển { background-color: #bfdbfe; color: #1d4ed8; }
+        .status-pending, .status-đang-chờ-xác-nhận { background-color: #fef08a; color: #854d0e; }
     </style>
 </head>
 
@@ -82,15 +87,17 @@ $status_class = strtolower(str_replace(' ', '-', $order['status']));
                     <p class="text-gray-500 mt-1">Ngày đặt: <b><?= date('d/m/Y H:i', strtotime($order['order_date'])) ?></b></p>
                 </div>
                 
-                <div class="flex flex-col items-end gap-2">
-                    <span class="px-4 py-2 inline-flex text-base leading-5 font-bold rounded-full status-<?= $status_class ?>">
+                <div class="flex flex-col items-end gap-2" id="action-area">
+                    <span id="order-status-badge" class="px-4 py-2 inline-flex text-base leading-5 font-bold rounded-full status-<?= $status_class ?>">
                         <?= htmlspecialchars($order['status']) ?>
                     </span>
 
                     <?php if ($role === 'user' && $order['status'] === 'Đang chờ xác nhận'): ?>
-                        <button onclick="cancelOrderFromDetail(<?= $order['id'] ?>)" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition shadow text-sm font-bold">
-                            <i class="fas fa-times-circle mr-1"></i> Hủy Đơn Hàng
-                        </button>
+                        <div id="cancel-btn-container">
+                            <button onclick="cancelOrderFromDetail(<?= $order['id'] ?>)" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition shadow text-sm font-bold mt-2">
+                                <i class="fas fa-times-circle mr-1"></i> Hủy Đơn Hàng
+                            </button>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -119,7 +126,6 @@ $status_class = strtolower(str_replace(' ', '-', $order['status']));
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php
-                        // Lấy chi tiết sản phẩm
                         $sql_details = "SELECT od.*, i.name, i.image 
                                         FROM order_details od 
                                         JOIN items i ON od.item_id = i.id 
@@ -167,16 +173,23 @@ $status_class = strtolower(str_replace(' ', '-', $order['status']));
         async function cancelOrderFromDetail(id) {
             const result = await Swal.fire({
                 title: 'Hủy đơn hàng?',
-                text: "Bạn có chắc chắn muốn hủy đơn hàng này không?",
+                text: "Hành động này không thể hoàn tác!",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
+                confirmButtonColor: '#ef4444', // Tailwind red-500
+                cancelButtonColor: '#6b7280', // Tailwind gray-500
                 confirmButtonText: 'Đồng ý hủy',
-                cancelButtonText: 'Quay lại'
+                cancelButtonText: 'Không'
             });
 
             if (result.isConfirmed) {
+                // Hiển thị loading
+                Swal.fire({
+                    title: 'Đang xử lý...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
                 try {
                     const formData = new FormData();
                     formData.append('order_id', id);
@@ -184,11 +197,32 @@ $status_class = strtolower(str_replace(' ', '-', $order['status']));
                     const data = await res.json();
                     
                     if (data.success) {
-                        Swal.fire('Đã hủy!', 'Đơn hàng của bạn đã được hủy.', 'success').then(() => location.reload());
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công!',
+                            text: 'Đơn hàng đã được hủy.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+
+                        // [V2 UPGRADE] Cập nhật giao diện ngay lập tức mà KHÔNG reload
+                        const badge = document.getElementById('order-status-badge');
+                        const btnContainer = document.getElementById('cancel-btn-container');
+
+                        // Đổi màu và text badge
+                        badge.className = "px-4 py-2 inline-flex text-base leading-5 font-bold rounded-full status-canceled";
+                        badge.innerText = "Đã hủy";
+
+                        // Xóa nút hủy
+                        if(btnContainer) btnContainer.remove();
+
                     } else {
-                        Swal.fire('Lỗi', data.message, 'error');
+                        Swal.fire('Lỗi', data.message || 'Không thể hủy đơn hàng.', 'error');
                     }
-                } catch(e) { Swal.fire('Lỗi', 'Không kết nối được server', 'error'); }
+                } catch(e) { 
+                    console.error(e);
+                    Swal.fire('Lỗi kết nối', 'Vui lòng kiểm tra mạng và thử lại.', 'error'); 
+                }
             }
         }
     </script>

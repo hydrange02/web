@@ -77,7 +77,7 @@ $vouchers = $stmt->get_result();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="bg-gray-100 font-sans">
-    <?php include '../Compoment/Menu.php'; ?>
+    <?php include '../Compoment/Admin_Menu.php'; ?>
 
     <div class="ml-64 p-8">
         <div class="flex justify-between items-center mb-6">

@@ -1,45 +1,46 @@
 <?php
 session_start();
-// Đảm bảo đường dẫn này đúng (nằm cùng thư mục Config)
-include 'Database.php'; 
+include 'Database.php';
+include 'CloudinaryHelper.php'; // Load helper mới
 
 header("Content-Type: application/json");
 
-// 1. Kiểm tra đăng nhập
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id) {
-    echo json_encode(['success' => false, 'message' => 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.']);
+    echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập.']);
     exit;
 }
 
-// 2. Nhận dữ liệu ảnh
-$imageUrl = $_POST['imageUrl'] ?? '';
-
-// Kiểm tra dữ liệu rỗng
-if (empty($imageUrl)) {
-    echo json_encode(['success' => false, 'message' => 'Không nhận được đường dẫn ảnh.']);
+// Kiểm tra có file gửi lên không
+if (!isset($_FILES['avatar_file']) || $_FILES['avatar_file']['error'] !== UPLOAD_ERR_OK) {
+    echo json_encode(['success' => false, 'message' => 'Vui lòng chọn file ảnh hợp lệ.']);
     exit;
 }
 
-// 3. Kết nối DB và Cập nhật
+// 1. Upload lên Cloudinary
+$fileTmp = $_FILES['avatar_file']['tmp_name'];
+$result = CloudinaryHelper::uploadImage($fileTmp);
+
+if (!$result['success']) {
+    echo json_encode($result); // Trả về lỗi nếu upload thất bại
+    exit;
+}
+
+$imageUrl = $result['url']; // Đây là link ảnh đầy đủ (https://...)
+
+// 2. Lưu URL vào Database
 $db = Database::getInstance()->getConnection();
+$stmt = $db->prepare("UPDATE users SET img = ? WHERE id = ?");
+$stmt->bind_param('si', $imageUrl, $user_id);
 
-try {
-    $stmt = $db->prepare("UPDATE users SET img = ? WHERE id = ?");
-    if (!$stmt) {
-        throw new Exception("Lỗi chuẩn bị truy vấn: " . $db->error);
-    }
-
-    $stmt->bind_param('si', $imageUrl, $user_id);
-
-    if ($stmt->execute()) {
-        echo json_encode(['success' => true, 'message' => 'Cập nhật ảnh đại diện thành công!']);
-    } else {
-        throw new Exception("Lỗi thực thi truy vấn: " . $stmt->error);
-    }
-    $stmt->close();
-
-} catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+if ($stmt->execute()) {
+    // Trả về đường dẫn để Frontend hiển thị
+    echo json_encode([
+        'success' => true, 
+        'message' => 'Đổi ảnh đại diện thành công!', 
+        'path' => $imageUrl // Trả về URL full
+    ]);
+} else {
+    echo json_encode(['success' => false, 'message' => 'Lỗi lưu Database.']);
 }
 ?>

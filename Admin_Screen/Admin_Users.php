@@ -40,7 +40,7 @@ $users = $stmt->get_result();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="bg-gray-100 min-h-screen font-sans">
-    <?php include '../Compoment/Menu.php'; ?>
+    <?php include '../Compoment/Admin_Menu.php'; ?>
 
     <div class="ml-64 p-8 transition-all duration-300">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Quản Lý Nhân Sự 👥</h1>
