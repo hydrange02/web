@@ -76,7 +76,8 @@ if ($id) {
 
                 <div class="w-full md:w-1/2 p-8 bg-gray-50 flex items-center justify-center border-r border-gray-100 relative group">
                     <div class="w-[400px] h-[400px] bg-white rounded-xl shadow-sm p-4 flex items-center justify-center">
-                        <img src="../<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>"
+                        <img src="<?= (strpos($item['image'], 'http') === 0) ? htmlspecialchars($item['image']) : '../' . htmlspecialchars($item['image']) ?>" 
+                            alt="<?= htmlspecialchars($item['name']) ?>"
                             class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-lg">
                     </div>
                     <?php if (isset($item['old_price']) && $item['price'] < $item['old_price']) : ?>
@@ -153,7 +154,7 @@ if ($id) {
                     <?php foreach ($recommended_items as $r) : ?>
                         <a href="Detail.php?id=<?= $r['id'] ?>" class="bg-white p-4 rounded-xl shadow hover:shadow-xl transition transform hover:-translate-y-1 border border-gray-100 group">
                             <div class="w-full h-40 mb-3 overflow-hidden rounded-lg bg-gray-50 flex items-center justify-center">
-                                <img src="../<?= htmlspecialchars($r['image']) ?>" class="w-full h-full object-contain group-hover:scale-110 transition duration-300">
+                                <img src="<?= (strpos($r['image'], 'http') === 0) ? htmlspecialchars($r['image']) : '../' . htmlspecialchars($r['image']) ?>" class="w-full h-full object-contain group-hover:scale-110 transition duration-300">
                             </div>
                             <h3 class="font-semibold text-gray-800 truncate mb-1"><?= htmlspecialchars($r['name']) ?></h3>
                             <p class="text-red-600 font-bold"><?= number_format($r['price']) ?>₫</p>
@@ -307,7 +308,14 @@ if ($id) {
             <div class="space-y-6">
                 <?php foreach ($reviews as $rv): ?>
                     <div class="flex gap-4 border-b border-gray-100 pb-4 last:border-0">
-                        <img src="<?= $rv['img'] ? $rv['img'] : '../assets/web/logo-removebg.png' ?>" class="w-12 h-12 rounded-full object-cover border">
+                        <?php 
+                            $reviewImg = !empty($rv['img']) ? $rv['img'] : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                            if (strpos($reviewImg, 'http') === false) {
+                                $reviewImg = '../' . $reviewImg;
+                            }
+                        ?>
+                        <img src="<?= htmlspecialchars($reviewImg) ?>" 
+                             class="w-12 h-12 rounded-full object-cover border">
                         <div>
                             <div class="flex items-center gap-2">
                                 <span class="font-bold text-gray-800"><?= htmlspecialchars($rv['username']) ?></span>

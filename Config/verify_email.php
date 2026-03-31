@@ -112,7 +112,7 @@ if (!empty($token)) {
         <h1 class="text-2xl font-extrabold text-gray-800 mb-2"><?= $title ?></h1>
         <p class="text-gray-600 mb-8 leading-relaxed"><?= $message ?></p>
 
-        <a href="../index.php" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg hover:shadow-blue-500/50">
+        <a href="./../index.php" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg hover:shadow-blue-500/50">
             <?php echo ($status === 'success' || $status === 'info') ? 'Đăng Nhập Ngay' : 'Quay Về Trang Chủ'; ?>
         </a>
     </div>

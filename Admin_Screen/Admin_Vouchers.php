@@ -115,7 +115,7 @@ $vouchers = $stmt->get_result();
                                 <?= $v['discount_type'] == 'percent' ? $v['discount_amount'].'%' : number_format($v['discount_amount']).'đ' ?>
                             </div>
                             <div class="text-xs text-gray-500">Đơn từ: <?= number_format($v['min_order_amount']) ?>đ</div>
-                            <?php if($v['cooldown_seconds'] > 0): 
+                            <?php if(isset($v['cooldown_seconds']) && $v['cooldown_seconds'] > 0): 
                                 $s = $v['cooldown_seconds'];
                                 $wait_str = ($s >= 86400) ? round($s/86400,1).' ngày' : (($s >= 3600) ? round($s/3600,1).' giờ' : round($s/60).' phút');
                             ?>

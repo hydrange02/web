@@ -5,6 +5,7 @@ require_once __DIR__ . '/../PHPMailer/src/PHPMailer.php';
 require_once __DIR__ . '/../PHPMailer/src/SMTP.php';
 require_once __DIR__ . '/Env.php'; // Load biến môi trường
 
+use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -27,17 +28,30 @@ class MailHelper {
         try {
             // 1. Cấu hình Server (SMTP)
             $mail->isSMTP();
+            $mail->CharSet    = 'UTF-8';
+            $mail->SMTPDebug  = 0; 
             $mail->Host       = Env::get('SMTP_HOST') ?: 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Username   = Env::get('SMTP_USER'); // Email của bạn
-            $mail->Password   = Env::get('SMTP_PASS'); // Mật khẩu ứng dụng
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = Env::get('SMTP_PORT') ?: 587;
-            $mail->CharSet    = 'UTF-8';
+            $mail->Username   = Env::get('SMTP_USER');
+            $mail->Password   = Env::get('SMTP_PASS');
+            $port             = Env::get('SMTP_PORT') ?: 587;
+            $mail->Port       = $port;
+            $mail->SMTPSecure = ($port == 465) ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Hostname   = 'hydrangeshop.com'; // Định danh máy chủ gửi
+
+            // Cấu hình bỏ qua kiểm tra SSL (Sửa lỗi không gửi được mail trên XAMPP/Localhost)
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
 
             // 2. Người gửi & Người nhận
-            $mail->setFrom(Env::get('SMTP_USER'), 'Hydrange Shop Support');
+            $mail->setFrom(Env::get('SMTP_USER'), 'Hydrange Shop');
             $mail->addAddress($to);
+            $mail->addReplyTo(Env::get('SMTP_USER'), 'Hydrange Shop Support');
 
             // 3. Xây dựng Template HTML
             // Lưu ý: Email Client hỗ trợ CSS nội tuyến (inline style) tốt nhất.
@@ -64,7 +78,7 @@ class MailHelper {
                     
                     <tr>
                         <td align="center" style="background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%); padding: 30px 20px;">
-                            <img src="$logoUrl" alt="Hydrange Shop" width="64" height="64" style="display: block; margin-bottom: 15px; border-radius: 50%; bg-color: white; padding: 5px;">
+                            <img src="$logoUrl" alt="Hydrange Shop" width="64" height="64" style="display: block; margin-bottom: 15px; border-radius: 50%; background-color: white; padding: 5px;">
                             
                             <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 700; letter-spacing: 0.5px;">
                                 $title
@@ -127,11 +141,36 @@ HTML;
             $mail->send();
             return ['success' => true, 'message' => 'Email đã được gửi thành công.'];
 
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             // Log lỗi vào file server nếu cần
-            // error_log($mail->ErrorInfo);
-            return ['success' => false, 'message' => "Không thể gửi email. Lỗi: {$mail->ErrorInfo}"];
+            // error_log($e->getMessage());
+            return ['success' => false, 'message' => "Không thể gửi email. Lỗi: " . $e->getMessage()];
         }
+    }
+
+    /**
+     * Hàm bổ trợ để gửi mail xác thực nhanh (Dùng cho update_info.php)
+     */
+    public static function sendVerificationEmail($email, $token) {
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+        $host = $_SERVER['HTTP_HOST'];
+        $verifyLink = "$protocol://$host/web/Config/verify_email.php?token=$token";
+
+        $subject = "Xác nhận thay đổi Email";
+        $title = "Xác Thực Email Mới";
+        $body = "
+            <p>Bạn vừa yêu cầu thay đổi email trên hệ thống Hydrange Shop.</p>
+            <p>Vui lòng nhấn vào nút bên dưới để xác nhận email mới:</p>
+            <div style='text-align: center; margin: 20px 0;'>
+                <a href='$verifyLink' style='background-color: #0ea5e9; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;'>
+                    Xác Nhận Email
+                </a>
+            </div>
+            <p>Nếu không phải bạn thực hiện, vui lòng đổi mật khẩu ngay lập tức.</p>
+        ";
+
+        $result = self::sendCustomMail($email, $subject, $title, $body);
+        return $result['success'];
     }
 }
 ?>

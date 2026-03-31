@@ -145,7 +145,7 @@ while ($cat = $categories->fetch_assoc()) $cat_options[] = $cat['category'];
                     <?php if ($products->num_rows > 0): ?>
                         <?php while ($item = $products->fetch_assoc()): ?>
                             <tr class="hover:bg-blue-50/50 transition duration-150">
-                                <td class="p-4 w-20"><img src="../<?= htmlspecialchars($item['image']) ?>" class="w-12 h-12 object-contain bg-white rounded border p-1"></td>
+                                <td class="p-4 w-20"><img src="<?= (strpos($item['image'], 'http') === 0 ? $item['image'] : '../' . htmlspecialchars($item['image'])) ?>" class="w-12 h-12 object-contain bg-white rounded border p-1"></td>
                                 <td class="p-4 font-semibold text-slate-700 max-w-[200px] truncate" title="<?= htmlspecialchars($item['name']) ?>">
                                     <?= htmlspecialchars($item['name']) ?>
                                     <div class="text-xs text-gray-400 font-normal mt-0.5">#<?= $item['id'] ?> - <?= htmlspecialchars($item['brand']) ?></div>
@@ -214,7 +214,21 @@ while ($cat = $categories->fetch_assoc()) $cat_options[] = $cat['category'];
                     </select>
                 </div>
 
-                <div class="col-span-2"><label class="text-xs font-bold text-gray-500">Link Ảnh</label><input type="text" name="image" id="edit-image" class="input-field w-full"></div>
+                <div class="col-span-2 flex flex-col items-center justify-center p-2 border border-dashed border-gray-300 rounded-lg bg-gray-50">
+                    <label class="block text-xs font-bold text-gray-500 mb-2 w-full text-left">Hình ảnh sản phẩm</label>
+                    <div class="relative w-full h-32 group cursor-pointer overflow-hidden rounded-lg border bg-white" onclick="document.getElementById('upload_prod_img_edit').click()">
+                        <img id="preview_img_edit" src="https://via.placeholder.com/300x200?text=Bấm+để+chọn+ảnh"
+                            class="w-full h-full object-contain p-1 transition-transform duration-300 group-hover:scale-105">
+                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            <i class="fas fa-camera text-white text-2xl"></i>
+                        </div>
+                        <div id="loading_img_edit" class="absolute inset-0 bg-white/90 flex items-center justify-center hidden">
+                            <i class="fas fa-spinner fa-spin text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <input type="file" id="upload_prod_img_edit" accept="image/*" class="hidden" onchange="uploadProductImage(this, 'preview_img_edit', 'prod_image_url_edit', 'loading_img_edit')">
+                    <input type="hidden" id="prod_image_url_edit" name="image">
+                </div>
                 <div class="col-span-2"><label class="text-xs font-bold text-gray-500">Mô tả</label><textarea name="description" id="edit-description" class="input-field w-full h-20"></textarea></div>
 
                 <div class="col-span-2 flex justify-end gap-3 mt-4 border-t pt-4">
@@ -280,7 +294,8 @@ while ($cat = $categories->fetch_assoc()) $cat_options[] = $cat['category'];
                 document.getElementById('edit-price').value = p.price;
                 document.getElementById('edit-brand').value = p.brand;
                 document.getElementById('edit-category').value = p.category;
-                document.getElementById('edit-image').value = p.image;
+                document.getElementById('preview_img_edit').src = (p.image.startsWith('http') ? p.image : '../' + p.image);
+                document.getElementById('prod_image_url_edit').value = p.image;
                 document.getElementById('edit-description').value = p.description;
                 document.getElementById('edit-modal').classList.remove('hidden');
             }

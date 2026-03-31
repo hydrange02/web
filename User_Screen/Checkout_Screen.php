@@ -250,7 +250,7 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                         <?php foreach ($items as $item): ?>
                             <div class="flex items-center gap-4 bg-white p-2 rounded-lg border border-gray-100">
                                 <div class="relative w-14 h-14 flex-shrink-0">
-                                    <img src="../<?= htmlspecialchars($item['image']) ?>" class="w-full h-full object-contain">
+                                    <img src="<?= (strpos($item['image'], 'http') === 0) ? htmlspecialchars($item['image']) : '../' . htmlspecialchars($item['image']) ?>" class="w-full h-full object-contain">
                                     <span class="absolute -top-1 -right-1 bg-gray-800 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold"><?= $item['quantity'] ?></span>
                                 </div>
                                 <div class="flex-1 min-w-0">

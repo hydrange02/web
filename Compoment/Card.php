@@ -4,7 +4,7 @@
 
     <div class="relative h-48 w-full bg-gray-50 p-4 overflow-hidden flex items-center justify-center group-hover:bg-blue-50/30 transition-colors">
         <a href="Detail.php?id=<?= $row['id'] ?>" class="block w-full h-full">
-            <img src="../<?= htmlspecialchars($row['image']) ?>" 
+            <img src="<?= (strpos($row['image'], 'http') === 0) ? htmlspecialchars($row['image']) : '../' . htmlspecialchars($row['image']) ?>" 
                  alt="<?= htmlspecialchars($row['name']) ?>" 
                  class="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-110">
         </a>

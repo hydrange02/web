@@ -77,9 +77,9 @@
                             $imgUrl = !empty($userData['img']) ? $userData['img'] : 
                                          (!empty($_SESSION['img']) ? $_SESSION['img'] : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png');
                             
-                            // Kiểm tra nếu là đường dẫn nội bộ (không chứa http) thì thêm prefix
-                            if (strpos($imgUrl, 'http') === false) {
-                                $imgUrl = '../assets/uploads/imgs/' . $imgUrl;
+                            // Kiểm tra nếu là đường dẫn nội bộ (không chứa http) thì thêm prefix thoát khỏi thư mục Compoment
+                            if (strpos($imgUrl, 'http') === false && !empty($imgUrl)) {
+                                $imgUrl = '../' . $imgUrl;
                             }
                             
                             $username = $userData['username'] ?? $_SESSION['username'] ?? 'User';

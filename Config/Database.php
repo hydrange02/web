@@ -1,23 +1,29 @@
 <?php
 // KIỂM TRA XEM CLASS ĐÃ TỒN TẠI CHƯA TRƯỚC KHI ĐỊNH NGHĨA
 if (!class_exists('Database')) {
+    
+    require_once __DIR__ . '/Env.php';
 
     class Database {
         private static $instance = null;
         private $connection;
-        private $host = "localhost";
-        private $user = "root";
-        private $password = "";
-        private $database = "shop";
 
         private function __construct() {
-            mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-            $this->connection = new mysqli($this->host, $this->user, $this->password, $this->database);
-            $this->connection->set_charset("utf8mb4");
+            // Lấy cấu hình từ .env hoặc dùng mặc định
+            $host = Env::get('DB_HOST', 'localhost');
+            $user = Env::get('DB_USER', 'root');
+            $pass = Env::get('DB_PASS', '');
+            $dbname = Env::get('DB_NAME', 'shop');
 
-            if ($this->connection->connect_error) {
-                error_log("Connection failed: " . $this->connection->connect_error);
-                die("Lỗi kết nối cơ sở dữ liệu.");
+            // Bật báo cáo lỗi mysqli
+            mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+            
+            try {
+                $this->connection = new mysqli($host, $user, $pass, $dbname);
+                $this->connection->set_charset("utf8mb4");
+            } catch (mysqli_sql_exception $e) {
+                error_log("Connection failed: " . $e->getMessage());
+                throw new Exception("Không thể kết nối đến cơ sở dữ liệu: " . $e->getMessage());
             }
         }
 
@@ -34,7 +40,6 @@ if (!class_exists('Database')) {
     }
 }
 
-// Chỉ khởi tạo $conn nếu chưa có
 if (!isset($conn)) {
     $conn = Database::getInstance()->getConnection();
 }

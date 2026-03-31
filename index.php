@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Login</title>
     <style>
-        /* ... (Giữ nguyên CSS cũ) ... */
         body {
             background: linear-gradient(-45deg, #1e3a8a, #3b82f6, #06b6d4, #0ea5e9);
             background-size: 400% 400%;

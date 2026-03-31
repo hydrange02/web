@@ -10,6 +10,7 @@ class Env {
         foreach ($lines as $line) {
             // Bỏ qua dòng comment bắt đầu bằng #
             if (strpos(trim($line), '#') === 0) continue; 
+            if (strpos($line, '=') === false) continue;
 
             // Tách key và value
             list($name, $value) = explode('=', $line, 2);

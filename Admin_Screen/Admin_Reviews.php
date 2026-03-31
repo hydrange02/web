@@ -81,7 +81,7 @@ $reviews = $stmt->get_result();
                         <td class="p-4 text-gray-500">#<?= $row['id'] ?></td>
                         <td class="p-4">
                             <div class="flex items-center gap-3">
-                                <img src="../<?= htmlspecialchars($row['image']) ?>" class="w-10 h-10 object-contain rounded border bg-white">
+                                <img src="<?= (strpos($row['image'], 'http') === 0) ? htmlspecialchars($row['image']) : '../' . htmlspecialchars($row['image']) ?>" class="w-10 h-10 object-contain rounded border bg-white">
                                 <span class="text-sm font-semibold line-clamp-1 max-w-[150px]" title="<?= htmlspecialchars($row['item_name']) ?>"><?= htmlspecialchars($row['item_name']) ?></span>
                             </div>
                         </td>

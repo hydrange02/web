@@ -27,7 +27,7 @@ if ($user_id) {
                         value="<?= $row['id'] ?>"
                         class="item-checkbox w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer transition">
                     <div class="w-20 h-20 flex-shrink-0 bg-gray-50 rounded-lg border border-gray-200 overflow-hidden p-1">
-                        <img src="../<?= htmlspecialchars($row['image']) ?>" class="w-full h-full object-contain mix-blend-multiply">
+                        <img src="<?= (strpos($row['image'], 'http') === 0) ? htmlspecialchars($row['image']) : '../' . htmlspecialchars($row['image']) ?>" class="w-full h-full object-contain mix-blend-multiply">
                     </div>
                     <div class="flex flex-col">
                         <a href="../User_Screen/Detail.php?id=<?= $row['item_id'] ?>" class="text-gray-800 font-semibold text-sm line-clamp-2 hover:text-blue-600 transition"><?= htmlspecialchars($row['name']) ?></a>

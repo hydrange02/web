@@ -185,22 +185,35 @@
                         confirm: confirm.value
                     })
                 });
-                const data = await res.json();
 
-                if (data.success) {
-                    showToast(data.message, 'success');
-                    // Đợi 2s để người dùng đọc thông báo rồi chuyển trang
-                    setTimeout(() => {
-                        window.location.href = '../index.php';
-                    }, 2500);
-                } else {
-                    showToast(data.message, 'error');
+                const text = await res.text(); // Lấy nội dung dạng văn bản trước
+                try {
+                    const data = JSON.parse(text); // Thử parse sang JSON
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Đăng Ký Thành Công!',
+                            text: data.message,
+                            confirmButtonText: 'Tôi đã hiểu',
+                            confirmButtonColor: '#2563eb',
+                            allowOutsideClick: false
+                        }).then(() => {
+                            window.location.href = '../index.php';
+                        });
+                    } else {
+                        showToast(data.message, 'error');
+                        button.textContent = "Đăng Ký";
+                        button.disabled = false;
+                    }
+                } catch (jsonError) {
+                    console.error("Phản hồi không phải JSON:", text);
+                    showToast('Lỗi cấu trúc phản hồi từ Server!', 'error');
                     button.textContent = "Đăng Ký";
                     button.disabled = false;
                 }
             } catch (error) {
                 console.error(error);
-                showToast('Lỗi kết nối server. Vui lòng thử lại!', 'error');
+                showToast(' ', 'error');
                 button.textContent = "Đăng Ký";
                 button.disabled = false;
             }

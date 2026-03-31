@@ -60,7 +60,13 @@ $stmt->close();
                 <h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-2">Thông Tin Tài Khoản</h2>
                 <div class="flex flex-col items-center mb-10">
                     <div class="relative w-32 h-32 mb-4 group">
-                        <img id="preview" src="<?= $user['img'] ? htmlspecialchars($user['img']) : '../assets/web/logo-removebg.png' ?>" class="rounded-full w-full h-full object-cover border-4 border-blue-500 shadow-lg">
+                        <?php 
+                            $displayImg = '../assets/web/logo-removebg.png';
+                            if (!empty($user['img'])) {
+                                $displayImg = (strpos($user['img'], 'http') === 0) ? $user['img'] : '../' . $user['img'];
+                            }
+                        ?>
+                        <img id="preview" src="<?= htmlspecialchars($displayImg) ?>" class="rounded-full w-full h-full object-cover border-4 border-blue-500 shadow-lg">
                         <button id="choose-avatar" class="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full shadow hover:bg-blue-600 transition"><i class="fas fa-camera"></i></button>
                     </div>
                     <input type="file" id="avatar" accept="image/*" class="hidden">
@@ -435,42 +441,8 @@ $stmt->close();
             }
         });
 
-        // Logic Đổi Pass
-        document.getElementById('change_password_btn').addEventListener('click', async () => {
-            const oldPass = document.getElementById('old_password').value;
-            const newPass = document.getElementById('new_password').value;
-            const confirmPass = document.getElementById('confirm_password').value;
-            const otp = document.getElementById('otp_code').value;
-
-            if (!oldPass || !newPass || !otp) return Swal.fire('Thiếu thông tin', '', 'warning');
-            if (newPass !== confirmPass) return Swal.fire('Lỗi', 'Mật khẩu mới không khớp', 'error');
-
-            const formData = new FormData();
-            formData.append('old_password', oldPass);
-            formData.append('new_password', newPass);
-            formData.append('otp', otp);
-            formData.append('csrf_token', csrfToken);
-
-            try {
-                const res = await fetch('../Config/change_password.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
-                if (data.success) {
-                    Swal.fire('Thành công', 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.', 'success').then(() => window.location.href = '../Config/logout.php');
-                } else {
-                    Swal.fire('Thất bại', data.message, 'error');
-                }
-            } catch (e) {
-                Swal.fire('Lỗi', 'Lỗi hệ thống', 'error');
-            }
-        });
     </script>
 
-    <script>
-        document.getElementById('addr-modal').id = 'addr_modal';
-    </script>
     <?php include '../Compoment/Footer.php'; ?>
 </body>
 

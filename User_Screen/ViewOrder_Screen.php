@@ -141,7 +141,7 @@ if($order['status'] == 'Đang chờ xác nhận') $status_class = 'pending';
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
-                                        <img src="../<?= htmlspecialchars($item['image']) ?>" class="w-12 h-12 rounded object-contain border bg-white mr-4">
+                                        <img src="<?= (strpos($item['image'], 'http') === 0) ? htmlspecialchars($item['image']) : '../' . htmlspecialchars($item['image']) ?>" class="w-12 h-12 rounded object-contain border bg-white mr-4">
                                         <span class="font-medium text-gray-800"><?= htmlspecialchars($item['name']) ?></span>
                                     </div>
                                 </td>

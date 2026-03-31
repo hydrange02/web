@@ -171,7 +171,7 @@ if ($sort) $extraParam .= '&sort=' . $sort;
                             Bữa Phụ <br> <span class="text-yellow-400">Cực Đã</span>
                         </h2>
                         <p class="text-gray-200 text-lg mb-8 max-w-lg">
-                            Nạp năng lượng với hàng trăm loại bánh kẹo, nước ngọt hấp dẫn.
+                            Nạp năng lượng với hàng trăm loại bánh kẹo.
                         </p>
                         <a href="?category=Đồ ăn vặt#product-list" class="bg-yellow-400 hover:bg-yellow-500 text-black px-8 py-3 rounded-full font-bold transition shadow-lg relative z-20">
                             Xem Menu Ăn Vặt <i class="fas fa-arrow-right ml-2"></i>
@@ -187,7 +187,7 @@ if ($sort) $extraParam .= '&sort=' . $sort;
                             Giao Hàng <br> <span class="text-green-400">Siêu Tốc 2H</span>
                         </h2>
                         <p class="text-gray-200 text-lg mb-8 max-w-lg">
-                            Ngồi tại nhà, mua sắm thả ga. Miễn phí vận chuyển cho đơn hàng từ 500k.
+                            Miễn phí vận chuyển cho đơn hàng từ 500k.
                         </p>
                         <a href="?sort=best_selling#product-list" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-bold transition shadow-lg relative z-20">
                             Xem Sản Phẩm HOT
@@ -201,10 +201,10 @@ if ($sort) $extraParam .= '&sort=' . $sort;
             <div class="swiper-pagination"></div>
         </div>
     </div>
+        
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-15 relative z-10 pb-20">
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10 pb-20">
-
-        <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 mb-12">
+        <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 mb-12 mt-8">
             <form method="GET" class="flex flex-col gap-5">
                 <div class="flex flex-col md:flex-row gap-4">
                     <div class="relative flex-1 group">
@@ -279,7 +279,7 @@ if ($sort) $extraParam .= '&sort=' . $sort;
 
                             <div class="relative h-52 p-6 bg-gray-50 flex items-center justify-center overflow-hidden">
                                 <a href="Detail.php?id=<?= $row['id'] ?>" class="block w-full h-full">
-                                    <img src="../<?= htmlspecialchars($row['image']) ?>"
+                                    <img src="<?= (strpos($row['image'], 'http') === 0 ? $row['image'] : '../' . htmlspecialchars($row['image'])) ?>"
                                         onerror="this.src='https://placehold.co/200x200?text=No+Image'"
                                         class="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-110"
                                         alt="<?= htmlspecialchars($row['name']) ?>">
