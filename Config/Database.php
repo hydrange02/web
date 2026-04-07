@@ -18,8 +18,11 @@ if (!class_exists('Database')) {
             $port = Env::get('DB_PORT', 24885);
 
             // 2. Đường dẫn ca.pem lùi 1 cấp ra thư mục gốc
-            $ssl_ca = dirname(__DIR__) . '/ca.pem'; 
+            $ssl_ca = realpath(dirname(__DIR__) . '/ca.pem');
 
+            if (!$ssl_ca || !file_exists($ssl_ca)) {
+                throw new Exception("Không tìm thấy file chứng chỉ SSL tại: " . dirname(__DIR__) . '/ca.pem');
+}
             // Bật báo cáo lỗi mysqli
             mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
             
