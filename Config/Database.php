@@ -1,5 +1,4 @@
 <?php
-// KIỂM TRA XEM CLASS ĐÃ TỒN TẠI CHƯA TRƯỚC KHI ĐỊNH NGHĨA
 if (!class_exists('Database')) {
     
     // Nạp file Env.php để lấy cấu hình

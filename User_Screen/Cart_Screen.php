@@ -1,3 +1,10 @@
+<?php
+    session_start();
+    include '../Config/Database.php';
+    $user_id = $_SESSION['user_id'] ?? null;
+    include '../Compoment/Menu.php';
+?>
+
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -31,12 +38,7 @@
 </head>
 
 <body class="bg-gray-50 font-sans">
-    <?php
-    session_start();
-    include '../Config/Database.php';
-    $user_id = $_SESSION['user_id'] ?? null;
-    include '../Compoment/Menu.php';
-    ?>
+    
 
     <header class="h-[140px] w-full flex flex-col items-center justify-center bg-gradient-to-r from-blue-700 to-cyan-500 shadow-lg relative overflow-hidden">
         <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
