@@ -17,19 +17,12 @@ if (!class_exists('Database')) {
             $dbname = Env::get('DB_NAME');
             $port = Env::get('DB_PORT');
 
-            $base_path = dirname(__DIR__);
-            $ssl_ca = $base_path . '/ca.pem';
+            // 2. Đường dẫn ca.pem lùi 1 cấp ra thư mục gốc
+            $ssl_ca = realpath(dirname(__DIR__) . '/ca.pem');
 
-            // Kiểm tra xem file có thực sự tồn tại không trước khi dùng
-            if (!file_exists($ssl_ca)) {
-                // Nếu vẫn không thấy, thử dùng DOCUMENT_ROOT của Apache
-                $ssl_ca = $_SERVER['DOCUMENT_ROOT'] . '/ca.pem';
-            }
-
-            // Nếu đến đây vẫn không thấy thì báo lỗi chi tiết để debug
-            if (!file_exists($ssl_ca)) {
-                throw new Exception("Lỗi: Không tìm thấy file ca.pem tại đường dẫn: " . $ssl_ca);
-            }
+            if (!$ssl_ca || !file_exists($ssl_ca)) {
+                throw new Exception("Không tìm thấy file chứng chỉ SSL tại: " . dirname(__DIR__) . '/ca.pem');
+}
             // Bật báo cáo lỗi mysqli
             mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
             
