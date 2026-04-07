@@ -2,6 +2,7 @@
 // KIỂM TRA XEM CLASS ĐÃ TỒN TẠI CHƯA TRƯỚC KHI ĐỊNH NGHĨA
 if (!class_exists('Database')) {
     
+    // Nạp file Env.php để lấy cấu hình
     require_once __DIR__ . '/Env.php';
 
     class Database {
@@ -9,21 +10,47 @@ if (!class_exists('Database')) {
         private $connection;
 
         private function __construct() {
-            // Lấy cấu hình từ .env hoặc dùng mặc định
-            $host = Env::get('DB_HOST', 'localhost');
-            $user = Env::get('DB_USER', 'root');
-            $pass = Env::get('DB_PASS', '');
+            // 1. Lấy cấu hình từ .env hoặc dùng mặc định từ Aiven
+            $host = Env::get('DB_HOST', 'mysql-226f954c-phuonghdcute.a.aivencloud.com');
+            $user = Env::get('DB_USER', 'avnadmin');
+            $pass = Env::get('DB_PASS', ''); // Điền password Aiven vào .env
             $dbname = Env::get('DB_NAME', 'shop');
+            $port = Env::get('DB_PORT', 24885);
+
+            // 2. Đường dẫn ca.pem lùi 1 cấp ra thư mục gốc
+            $ssl_ca = dirname(__DIR__) . '/ca.pem'; 
 
             // Bật báo cáo lỗi mysqli
             mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
             
             try {
-                $this->connection = new mysqli($host, $user, $pass, $dbname);
+                // 3. Khởi tạo mysqli
+                $this->connection = mysqli_init();
+
+                // 4. Thiết lập SSL
+                mysqli_ssl_set($this->connection, NULL, NULL, $ssl_ca, NULL, NULL);
+
+                // 5. Kết nối thực tế
+                $success = mysqli_real_connect(
+                    $this->connection, 
+                    $host, 
+                    $user, 
+                    $pass, 
+                    $dbname, 
+                    $port, 
+                    NULL, 
+                    MYSQLI_CLIENT_SSL
+                );
+
+                if (!$success) {
+                    throw new Exception("mysqli_real_connect failed");
+                }
+
                 $this->connection->set_charset("utf8mb4");
-            } catch (mysqli_sql_exception $e) {
+
+            } catch (Exception $e) {
                 error_log("Connection failed: " . $e->getMessage());
-                throw new Exception("Không thể kết nối đến cơ sở dữ liệu: " . $e->getMessage());
+                throw new Exception("Lỗi kết nối database: " . $e->getMessage());
             }
         }
 
@@ -40,7 +67,8 @@ if (!class_exists('Database')) {
     }
 }
 
+// Khởi tạo biến $conn dùng chung
 if (!isset($conn)) {
     $conn = Database::getInstance()->getConnection();
 }
-?>
+?>  
