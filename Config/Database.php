@@ -11,7 +11,7 @@ if (!class_exists('Database')) {
 
         private function __construct() {
             // 1. Lấy cấu hình từ .env hoặc dùng mặc định từ Aiven
-            $host = Env::get('DB_HOST', 'mysql-226f954c-phuonghdcute.a.aivencloud.com');
+            $host = Env::get('DB_HOST', 'p:mysql-226f954c-phuonghdcute.a.aivencloud.com');
             $user = Env::get('DB_USER', 'avnadmin');
             $pass = Env::get('DB_PASS', ''); // Điền password Aiven vào .env
             $dbname = Env::get('DB_NAME', 'shop');
