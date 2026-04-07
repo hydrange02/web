@@ -11,18 +11,25 @@ if (!class_exists('Database')) {
 
         private function __construct() {
             // 1. Lấy cấu hình từ .env hoặc dùng mặc định từ Aiven
-            $host = Env::get('DB_HOST', 'p:mysql-226f954c-phuonghdcute.a.aivencloud.com');
-            $user = Env::get('DB_USER', 'avnadmin');
-            $pass = Env::get('DB_PASS', ''); // Điền password Aiven vào .env
-            $dbname = Env::get('DB_NAME', 'shop');
-            $port = Env::get('DB_PORT', 24885);
+            $host = Env::get('DB_HOST');
+            $user = Env::get('DB_USER');
+            $pass = Env::get('DB_PASS'); // Điền password Aiven vào .env
+            $dbname = Env::get('DB_NAME');
+            $port = Env::get('DB_PORT');
 
-            // 2. Đường dẫn ca.pem lùi 1 cấp ra thư mục gốc
-            $ssl_ca = realpath(dirname(__DIR__) . '/ca.pem');
+            $base_path = dirname(__DIR__);
+            $ssl_ca = $base_path . '/ca.pem';
 
-            if (!$ssl_ca || !file_exists($ssl_ca)) {
-                throw new Exception("Không tìm thấy file chứng chỉ SSL tại: " . dirname(__DIR__) . '/ca.pem');
-}
+            // Kiểm tra xem file có thực sự tồn tại không trước khi dùng
+            if (!file_exists($ssl_ca)) {
+                // Nếu vẫn không thấy, thử dùng DOCUMENT_ROOT của Apache
+                $ssl_ca = $_SERVER['DOCUMENT_ROOT'] . '/ca.pem';
+            }
+
+            // Nếu đến đây vẫn không thấy thì báo lỗi chi tiết để debug
+            if (!file_exists($ssl_ca)) {
+                throw new Exception("Lỗi: Không tìm thấy file ca.pem tại đường dẫn: " . $ssl_ca);
+            }
             // Bật báo cáo lỗi mysqli
             mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
             
