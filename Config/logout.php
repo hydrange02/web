@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Xóa tất cả các biến session
 $_SESSION = array();
 
 if (ini_get("session.use_cookies")) {
@@ -12,10 +11,8 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-// Cuối cùng, hủy session
 session_destroy();
 
-// Chuyển hướng về trang chủ
 header("Location: ../index.php");
 exit;
 ?>

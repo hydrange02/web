@@ -102,13 +102,18 @@ if ($id) {
                         </div>
                     </div>
 
-                    <div class="text-4xl font-bold text-red-600 mb-6 flex items-end gap-2">
-                        <?= number_format($item['price']) ?>₫
-                        <?php if (isset($item['old_price']) && $item['old_price'] > $item['price']): ?>
-                            <span class="text-gray-400 text-lg font-normal line-through decoration-gray-400 decoration-2">
-                                <?= number_format($item['old_price']) ?>₫
-                            </span>
-                        <?php endif; ?>
+                    <div class="mb-2">
+                        <div class="text-4xl font-bold text-red-600 flex items-end gap-2">
+                            <span id="unit-price" data-price="<?= $item['price'] ?>"><?= number_format($item['price']) ?>₫</span>
+                            <?php if (isset($item['old_price']) && $item['old_price'] > $item['price']): ?>
+                                <span class="text-gray-400 text-lg font-normal line-through decoration-gray-400 decoration-2">
+                                    <?= number_format($item['old_price']) ?>₫
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="text-lg mt-2 font-semibold text-gray-700">
+                            Tổng: <span id="total-price"><?= number_format($item['price']) ?>₫</span>
+                        </div>
                     </div>
 
                     <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
@@ -170,12 +175,23 @@ if ($id) {
     <script>
         const maxStock = <?= $item['stock'] ?>;
         const qtyInput = document.getElementById('quantity');
+        const unitPrice = document.getElementById('unit-price');
+        const totalPrice = document.getElementById('total-price');
+
+        // Hàm cập nhật tổng giá
+        function updateTotalPrice() {
+            const price = parseInt(unitPrice.getAttribute('data-price'));
+            const qty = parseInt(qtyInput.value) || 1;
+            const total = price * qty;
+            totalPrice.textContent = total.toLocaleString('vi-VN') + '₫';
+        }
 
         // 1. Logic nút Tăng/Giảm
         document.getElementById('increase')?.addEventListener('click', () => {
             let current = parseInt(qtyInput.value) || 1;
             if (current < maxStock) {
                 qtyInput.value = current + 1;
+                updateTotalPrice();
             } else {
                 showToast(`Chỉ còn ${maxStock} sản phẩm trong kho!`, 'warning');
             }
@@ -185,6 +201,7 @@ if ($id) {
             let current = parseInt(qtyInput.value) || 1;
             if (current > 1) {
                 qtyInput.value = current - 1;
+                updateTotalPrice();
             }
         });
 
@@ -197,7 +214,11 @@ if ($id) {
                 input.value = maxStock;
                 showToast(`Chỉ còn ${maxStock} sản phẩm!`, 'warning');
             }
+            updateTotalPrice();
         }
+
+        // Cập nhật tổng giá khi trang vừa load
+        updateTotalPrice();
 
         // 3. Hàm Thêm vào giỏ (AJAX)
         async function addToCart(itemId) {

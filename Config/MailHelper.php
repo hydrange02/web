@@ -29,7 +29,10 @@ class MailHelper {
             // 1. Cấu hình Server (SMTP)
             $mail->isSMTP();
             $mail->CharSet    = 'UTF-8';
-            $mail->SMTPDebug  = 0; 
+            $mail->SMTPDebug  = 2; // Bật debug chi tiết
+            // Chỉ log debug vào error_log, không in ra output để không phá JSON
+            $mail->Debugoutput = function($str, $level) { error_log("[MAIL] $str"); };
+            ob_start(); // Bắt mọi output thừa từ PHPMailer (nếu có)
             $mail->Host       = Env::get('SMTP_HOST') ?: 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
             $mail->Username   = Env::get('SMTP_USER');
@@ -139,9 +142,11 @@ HTML;
             $mail->AltBody = strip_tags($bodyContent); // Nội dung dự phòng cho client không hỗ trợ HTML
 
             $mail->send();
+            ob_end_clean(); // Xóa mọi output thừa trước khi trả về
             return ['success' => true, 'message' => 'Email đã được gửi thành công.'];
 
         } catch (Throwable $e) {
+            ob_end_clean(); // Xóa mọi output thừa trước khi trả về
             // Log lỗi vào file server nếu cần
             // error_log($e->getMessage());
             return ['success' => false, 'message' => "Không thể gửi email. Lỗi: " . $e->getMessage()];

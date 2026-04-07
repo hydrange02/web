@@ -37,20 +37,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // 3. KIỂM TRA TỒN TẠI (Username & Email)
-    
-    // Check Username
-    $checkUser = $db->prepare("SELECT id FROM users WHERE username = ?");
-    if (!$checkUser) {
-        echo json_encode(["success"=>false, "message"=>"Lỗi chuẩn bị SQL (User): " . $db->error]); exit;
-    }
-    $checkUser->bind_param('s', $username);
-    $checkUser->execute();
-    $checkUser->store_result();
-    if ($checkUser->num_rows > 0) {
-        ob_clean();
-        echo json_encode(["success"=>false, "message"=>"Tên đăng nhập đã tồn tại!"]); exit;
-    }
-    $checkUser->close();
 
     // Check Email
     $checkEmail = $db->prepare("SELECT id FROM users WHERE email = ?");
