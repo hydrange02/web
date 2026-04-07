@@ -38,7 +38,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <li>
                 <a href="Admin_Users.php" class="flex items-center p-3 rounded-lg group hover:bg-slate-800 transition <?= $current_page == 'Admin_Users.php' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-300' ?>">
                     <i class="fas fa-users w-6 h-6 text-center transition duration-75 group-hover:text-white"></i>
-                    <span class="ml-3">Khách Hàng</span>
+                    <span class="ml-3">Tài Khoản</span>
                 </a>
             </li>
 

@@ -34,7 +34,7 @@ $users = $stmt->get_result();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Quản Lý Nhân Sự</title>
+    <title>Quản Lý Tài Khoản</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -43,7 +43,7 @@ $users = $stmt->get_result();
     <?php include '../Compoment/Admin_Menu.php'; ?>
 
     <div class="ml-64 p-8 transition-all duration-300">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Quản Lý Nhân Sự 👥</h1>
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Quản Lý Tài Khoản 👥</h1>
 
         <?php if($current_role === 'manager'): ?>
             <div class="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 p-4 mb-6 rounded shadow-sm">
