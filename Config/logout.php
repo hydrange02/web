@@ -1,4 +1,3 @@
-// File: logout.php
 <?php
 session_start();
 
