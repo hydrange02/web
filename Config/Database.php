@@ -73,4 +73,4 @@ if (!class_exists('Database')) {
 if (!isset($conn)) {
     $conn = Database::getInstance()->getConnection();
 }
-?>  
+?>

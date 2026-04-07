@@ -1,11 +1,10 @@
 <?php
-// File: Web php/User_Screen/Checkout_Screen.php
 session_start();
 include '../Config/Database.php';
 
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id) {
-    header('Location: ../index.php'); // Chưa đăng nhập thì về trang chủ/login
+    header('Location: ../index.php');
     exit;
 }
 
@@ -181,7 +180,7 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Họ và tên</label>
                                 <div class="relative">
                                     <i class="fas fa-user absolute left-3 top-3 text-gray-400"></i>
-                                    <input type="text" id="r_name" name="receiver_name" value="<?= htmlspecialchars($userInfo['username']) ?>" required
+                                    <input type="text" id="r_name" name="receiver_name" value="<?= htmlspecialchars($userInfo['username'] ?? '') ?>" required
                                         class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-gray-50 focus:bg-white font-medium">
                                 </div>
                             </div>
@@ -189,7 +188,7 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Số điện thoại</label>
                                 <div class="relative">
                                     <i class="fas fa-phone absolute left-3 top-3 text-gray-400"></i>
-                                    <input type="text" id="r_phone" name="receiver_phone" value="<?= htmlspecialchars($userInfo['phone']) ?>" required pattern="[0-9]{10,11}"
+                                    <input type="text" id="r_phone" name="receiver_phone" value="<?= htmlspecialchars($userInfo['phone'] ?? '') ?>" required pattern="[0-9]{10,11}"
                                         class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-gray-50 focus:bg-white font-medium">
                                 </div>
                             </div>
