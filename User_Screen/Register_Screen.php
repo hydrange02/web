@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Đăng Ký - Hydrange Shop</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
@@ -186,28 +188,26 @@
                     })
                 });
 
-                const text = await res.text(); // Lấy nội dung dạng văn bản trước
+                const text = await res.text();
                 try {
-                    const data = JSON.parse(text); // Thử parse sang JSON
+                    // Cắt bỏ mọi khoảng trắng vô tình lọt vào (nếu có)
+                    const cleanText = text.trim();
+                    const data = JSON.parse(cleanText);
+                    
                     if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Đăng Ký Thành Công!',
-                            text: data.message,
-                            confirmButtonText: 'Tôi đã hiểu',
-                            confirmButtonColor: '#2563eb',
-                            allowOutsideClick: false
-                        }).then(() => {
+                        // Sử dụng chính hàm showToast của hệ thống, không dùng thư viện ngoài
+                        showToast(data.message, 'success');
+                        setTimeout(() => {
                             window.location.href = '../index.php';
-                        });
+                        }, 2000); // Đợi 2 giây rồi chuyển trang
                     } else {
                         showToast(data.message, 'error');
                         button.textContent = "Đăng Ký";
                         button.disabled = false;
                     }
-                } catch (jsonError) {
-                    console.error("Phản hồi không phải JSON:", text);
-                    showToast('Lỗi cấu trúc phản hồi từ Server!', 'error');
+                } catch (error) {
+                    console.error("Lỗi xử lý Data:", error, text);
+                    showToast('Lỗi hiển thị! Vui lòng làm mới trang.', 'error');
                     button.textContent = "Đăng Ký";
                     button.disabled = false;
                 }
