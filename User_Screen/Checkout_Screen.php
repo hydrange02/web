@@ -223,21 +223,21 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                             <i class="fas fa-money-bill-wave ml-auto text-green-500 text-xl"></i>
                         </label>
 
-                        <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 has-[:checked]:shadow-sm">
-                            <input type="radio" name="payment_method" value="Banking" class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500" onchange="toggleBankInfo(true)">
+                        <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-pink-500 hover:bg-pink-50/50 transition has-[:checked]:border-pink-500 has-[:checked]:bg-pink-50 has-[:checked]:shadow-sm">
+                            <input type="radio" name="payment_method" value="Banking" class="w-5 h-5 text-pink-600 border-gray-300 focus:ring-pink-500" onchange="toggleBankInfo(true)">
                             <div class="ml-4">
-                                <span class="block font-bold text-gray-800">Chuyển khoản ngân hàng (QR Code)</span>
-                                <span class="text-xs text-gray-500">Quét mã VietQR để thanh toán nhanh chóng</span>
+                                <span class="block font-bold text-gray-800">Thanh toán qua MoMo (QR)</span>
+                                <span class="text-xs text-gray-500">Quét mã MoMo để thanh toán nhanh chóng</span>
                             </div>
-                            <i class="fas fa-university ml-auto text-blue-500 text-xl"></i>
+                            <i class="fas fa-wallet ml-auto text-pink-500 text-xl"></i>
                         </label>
                     </div>
 
-                    <div id="bank-info" class="hidden mt-6 p-6 bg-blue-50 rounded-xl border border-blue-100 text-center animate-pulse">
+                    <div id="bank-info" class="hidden mt-6 p-6 bg-pink-50 rounded-xl border border-pink-100 text-center">
                         <div class="inline-block bg-white p-2 rounded-lg shadow-sm mb-3">
-                            <img src="https://img.vietqr.io/image/MB-0898341746-compact.png?amount=<?= $grand_total ?>&addInfo=Thanh toan don hang&time=<?= time() ?>" alt="QR Code" class="w-40 h-40 object-contain">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=2%7C99%7C0898341746%7C%7C%7C0%7C0%7C<?= $grand_total ?>%7CThanh+toan+don+hang%7Ctransfer_myqr" alt="MoMo QR Code" class="w-40 h-40 object-contain">
                         </div>
-                        <p class="font-bold text-blue-800 text-sm">Quét mã để thanh toán</p>
+                        <p class="font-bold text-pink-600 text-sm">Quét mã MoMo để thanh toán</p>
                         <p class="text-xs text-gray-600 mt-1">Nội dung: <b>Thanh toan don hang</b></p>
                         <p class="text-[10px] text-red-500 italic mt-2">*Sau khi chuyển khoản thành công, vui lòng ấn Đặt Hàng</p>
                     </div>

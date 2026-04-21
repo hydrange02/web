@@ -379,7 +379,6 @@ if ($sort) $extraParam .= '&sort=' . $sort;
     <script>
         var swiper = new Swiper(".mySwiper", {
             spaceBetween: 0,
-            effect: "fade",
             loop: true,
             autoplay: {
                 delay: 4000,
