@@ -97,8 +97,6 @@ if ($sort) $extraParam .= '&sort=' . $sort;
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -122,83 +120,89 @@ if ($sort) $extraParam .= '&sort=' . $sort;
             background: #94a3b8;
         }
 
-        .swiper-pagination-bullet {
-            background: white;
-            opacity: 0.5;
-            width: 10px;
-            height: 10px;
+        /* Custom Animations for Banner */
+        @keyframes loopCenter {
+            0% { opacity: 0; transform: scale(0.95) translateY(20px); }
+            10% { opacity: 1; transform: scale(1) translateY(0); }
+            85% { opacity: 1; transform: scale(1) translateY(0); }
+            95% { opacity: 0; transform: scale(0.95) translateY(-20px); }
+            100% { opacity: 0; transform: scale(0.95) translateY(-20px); }
+        }
+        @keyframes loopLeft {
+            0%, 15% { opacity: 0; transform: translateX(-40px); }
+            25%, 85% { opacity: 1; transform: translateX(0); }
+            95%, 100% { opacity: 0; transform: translateX(-40px); }
+        }
+        @keyframes loopRight {
+            0%, 15% { opacity: 0; transform: translateX(40px); }
+            25%, 85% { opacity: 1; transform: translateX(0); }
+            95%, 100% { opacity: 0; transform: translateX(40px); }
         }
 
-        .swiper-pagination-bullet-active {
-            background: #2563eb;
-            opacity: 1;
-            width: 20px;
-            border-radius: 5px;
+        .animate-loop-center {
+            animation: loopCenter 8s infinite cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .animate-loop-left {
+            animation: loopLeft 8s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            animation-fill-mode: both;
+        }
+        .animate-loop-right {
+            animation: loopRight 8s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            animation-fill-mode: both;
         }
     </style>
 </head>
 
 <body class="bg-[#F8F9FA] text-gray-800">
 
-    <div class="relative w-full h-[400px] md:h-[500px] overflow-hidden group">
-        <div class="swiper mySwiper w-full h-full">
-            <div class="swiper-wrapper">
-
-                <div class="swiper-slide relative">
-                    <img src="https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=1974&auto=format&fit=crop"
-                        class="w-full h-full object-cover brightness-[0.6]" alt="Siêu thị">
-                    <div class="absolute inset-0 flex flex-col justify-center items-center text-center text-white px-4 z-10">
-                        <span class="bg-blue-600 text-white font-bold px-4 py-1 rounded-full text-xs uppercase tracking-widest mb-4 animate-pulse">
-                            🎉 Chào mừng đến Hydrange Shop
-                        </span>
-                        <h1 class="text-4xl md:text-6xl font-black mb-4 drop-shadow-xl">
-                            Thế Giới Tiện Lợi <br> <span class="text-blue-400">Trong Tầm Tay</span>
-                        </h1>
-                        <p class="text-gray-200 text-lg md:text-xl font-medium max-w-2xl mb-8">
-                            Từ thực phẩm, đồ uống đến nhu yếu phẩm hàng ngày.
-                        </p>
-                        <a href="Home_Screen.php" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-bold transition transform hover:scale-105 shadow-lg flex items-center gap-2 relative z-20">
-                            Mua Sắm Ngay <i class="fas fa-shopping-cart"></i>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="swiper-slide relative">
-                    <img src="https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=1974&auto=format&fit=cropssss"
-                        class="w-full h-full object-cover brightness-[0.6]" alt="">
-                    <div class="absolute inset-0 flex flex-col justify-center items-start text-left text-white px-10 md:px-24 z-10">
-                        <h2 class="text-4xl md:text-7xl font-black mb-4 leading-tight">
-                            Bữa Phụ <br> <span class="text-yellow-400">Cực Đã</span>
-                        </h2>
-                        <p class="text-gray-200 text-lg mb-8 max-w-lg">
-                            Nạp năng lượng với hàng trăm loại bánh kẹo.
-                        </p>
-                        <a href="?category=Đồ ăn vặt#product-list" class="bg-yellow-400 hover:bg-yellow-500 text-black px-8 py-3 rounded-full font-bold transition shadow-lg relative z-20">
-                            Xem Menu Ăn Vặt <i class="fas fa-arrow-right ml-2"></i>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="swiper-slide relative">
-                    <img src="https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=1974&auto=format&fit=crop"
-                        class="w-full h-full object-cover brightness-[0.5]" alt="">
-                    <div class="absolute inset-0 flex flex-col justify-center items-end text-right text-white px-10 md:px-24 z-10">
-                        <h2 class="text-4xl md:text-6xl font-black mb-4">
-                            Giao Hàng <br> <span class="text-green-400">Siêu Tốc 2H</span>
-                        </h2>
-                        <p class="text-gray-200 text-lg mb-8 max-w-lg">
-                            Miễn phí vận chuyển cho đơn hàng từ 500k.
-                        </p>
-                        <a href="?sort=best_selling#product-list" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-bold transition shadow-lg relative z-20">
-                            Xem Sản Phẩm HOT
-                        </a>
-                    </div>
-                </div>
-
+    <div class="relative w-full h-[400px] md:h-[500px] overflow-hidden group bg-gray-900 flex items-center justify-center">
+        <img src="https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=1974&auto=format&fit=crop"
+            class="absolute inset-0 w-full h-full object-cover brightness-[0.4]" alt="Banner siêu thị">
+        
+        <div class="relative z-10 w-full max-w-7xl mx-auto px-4 flex justify-between items-center h-full">
+            
+            <!-- Trái: Bữa Phụ Cực Đã -->
+            <div class="animate-loop-left w-1/4 hidden md:flex flex-col items-start text-left text-white mt-12 pr-4">
+                <span class="bg-yellow-500 text-black font-bold px-3 py-1 rounded-full text-[10px] xl:text-xs uppercase tracking-widest mb-3 shadow-lg shadow-yellow-500/30">
+                    🥨 Đồ ăn vặt
+                </span>
+                <h2 class="text-3xl xl:text-4xl font-black mb-3 leading-tight drop-shadow-lg">
+                    Bữa Phụ <br> <span class="text-yellow-400">Cực Đã</span>
+                </h2>
+                <a href="?category=Đồ ăn vặt#product-list" class="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white px-5 py-2 rounded-full font-bold transition shadow-lg text-sm group">
+                    Khám phá <i class="fas fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+                </a>
             </div>
-            <div class="swiper-button-next text-white/70 hover:text-white transition hidden md:flex"></div>
-            <div class="swiper-button-prev text-white/70 hover:text-white transition hidden md:flex"></div>
-            <div class="swiper-pagination"></div>
+
+            <!-- Giữa: Thế Giới Tiện Lợi -->
+            <div class="animate-loop-center w-full md:w-2/4 flex flex-col justify-center items-center text-center text-white px-2">
+                <span class="bg-blue-600 text-white font-bold px-4 py-1 rounded-full text-xs xl:text-sm uppercase tracking-widest mb-4 shadow-lg shadow-blue-500/30">
+                    🎉 Chào mừng đến Hydrange Shop
+                </span>
+                <h1 class="text-4xl md:text-5xl xl:text-6xl font-black mb-4 drop-shadow-2xl leading-tight">
+                    Thế Giới Tiện Lợi <br> <span class="text-blue-400">Trong Tầm Tay</span>
+                </h1>
+                <p class="text-gray-200 text-base xl:text-lg font-medium max-w-md mx-auto mb-8 drop-shadow-md">
+                    Từ thực phẩm, đồ uống đến nhu yếu phẩm hàng ngày.
+                </p>
+                <a href="Home_Screen.php" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-full font-bold transition transform hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(37,99,235,0.4)] flex items-center gap-2 text-lg">
+                    Mua Sắm Ngay <i class="fas fa-shopping-cart"></i>
+                </a>
+            </div>
+
+            <!-- Phải: Giao Hàng Siêu Tốc -->
+            <div class="animate-loop-right w-1/4 hidden md:flex flex-col items-end text-right text-white mt-12 pl-4">
+                <span class="bg-green-500 text-white font-bold px-3 py-1 rounded-full text-[10px] xl:text-xs uppercase tracking-widest mb-3 shadow-lg shadow-green-500/30">
+                    🚀 Giao trong 2H
+                </span>
+                <h2 class="text-3xl xl:text-4xl font-black mb-3 drop-shadow-lg leading-tight">
+                    Giao Hàng <br> <span class="text-green-400">Siêu Tốc</span>
+                </h2>
+                <a href="?sort=best_selling#product-list" class="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white px-5 py-2 rounded-full font-bold transition shadow-lg text-sm group">
+                    Hàng HOT <i class="fas fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+                </a>
+            </div>
+
         </div>
     </div>
         
@@ -377,22 +381,6 @@ if ($sort) $extraParam .= '&sort=' . $sort;
     </div>
 
     <script>
-        var swiper = new Swiper(".mySwiper", {
-            spaceBetween: 0,
-            loop: true,
-            autoplay: {
-                delay: 4000,
-                disableOnInteraction: false,
-            },
-            pagination: {
-                el: ".swiper-pagination",
-                clickable: true,
-            },
-            navigation: {
-                nextEl: ".swiper-button-next",
-                prevEl: ".swiper-button-prev",
-            },
-        });
 
         async function addToCart(itemId) {
             const formData = new FormData();

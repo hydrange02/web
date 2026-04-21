@@ -20,16 +20,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // ... (Copy lại logic Save của bản trước) ...
         $code = strtoupper(trim($_POST['code']));
         $type = $_POST['discount_type'];
-        $amount = $_POST['discount_amount']; 
-        $max_disc = $_POST['max_discount']; 
-        $points = $_POST['points_cost'];
-        $qty = $_POST['qty'];
-        $limit = $_POST['limit_per_user'];
-        $min_order = $_POST['min_order'];
+        $amount = max(0, (float)$_POST['discount_amount']); 
+        if ($type === 'percent' && $amount > 100) $amount = 100;
+        $max_disc = max(0, (float)$_POST['max_discount']); 
+        $points = max(0, (int)$_POST['points_cost']);
+        $qty = max(1, (int)$_POST['qty']);
+        $limit = max(1, (int)$_POST['limit_per_user']);
+        $min_order = max(0, (float)$_POST['min_order']);
         $start_date = !empty($_POST['start_date']) ? $_POST['start_date'] : null;
         $end_date   = !empty($_POST['end_date'])   ? $_POST['end_date']   : null;
         $target_user = !empty($_POST['target_user_id']) ? $_POST['target_user_id'] : null;
-        $cd_val = isset($_POST['cooldown_val']) ? intval($_POST['cooldown_val']) : 0;
+        $cd_val = max(0, isset($_POST['cooldown_val']) ? intval($_POST['cooldown_val']) : 0);
         $cd_unit = isset($_POST['cooldown_unit']) ? intval($_POST['cooldown_unit']) : 1;
         $cooldown_seconds = $cd_val * $cd_unit;
         $id = $_POST['id'] ?? null;
@@ -41,7 +42,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $db->prepare("INSERT INTO vouchers (code, discount_type, discount_amount, max_discount, points_cost, quantity, limit_per_user, min_order_amount, start_date, end_date, target_user_id, cooldown_seconds) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->bind_param("ssiiiiisssii", $code, $type, $amount, $max_disc, $points, $qty, $limit, $min_order, $start_date, $end_date, $target_user, $cooldown_seconds);
         }
-        $stmt->execute();
+        try {
+            $stmt->execute();
+        } catch (mysqli_sql_exception $e) {
+            if ($e->getCode() == 1062) {
+                header("Location: Admin_Vouchers.php?error=" . urlencode("Mã voucher '$code' đã tồn tại. Xin vui lòng chọn mã khác."));
+            } else {
+                header("Location: Admin_Vouchers.php?error=" . urlencode("Xảy ra lỗi: " . $e->getMessage()));
+            }
+            exit;
+        }
     }
     header("Location: Admin_Vouchers.php");
     exit;
@@ -84,6 +94,13 @@ $vouchers = $stmt->get_result();
             <h1 class="text-3xl font-bold text-gray-800">Quản Lý Voucher 🎫</h1>
             <button onclick="openModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 shadow flex gap-2 items-center"><i class="fas fa-plus"></i> Phát Hành Voucher</button>
         </div>
+
+        <?php if(isset($_GET['error'])): ?>
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-sm mb-6 font-medium">
+                <i class="fas fa-exclamation-circle mr-2"></i> <?= htmlspecialchars($_GET['error']) ?>
+                <a href="Admin_Vouchers.php" class="float-right text-red-500 hover:text-red-700"><i class="fas fa-times"></i></a>
+            </div>
+        <?php endif; ?>
 
         <div class="bg-white p-4 rounded-xl shadow-sm mb-6 flex justify-between items-center">
             <form method="GET" class="flex gap-2 w-full md:w-1/2">
@@ -180,12 +197,12 @@ $vouchers = $stmt->get_result();
                         <option value="percent">Phần trăm (%)</option>
                     </select>
                 </div>
-                <div><label class="text-xs font-bold text-gray-500">Giá trị giảm</label><input type="number" name="discount_amount" id="vamount" class="w-full border p-2 rounded font-bold" required></div>
+                <div><label class="text-xs font-bold text-gray-500">Giá trị giảm</label><input type="number" min="0" name="discount_amount" id="vamount" class="w-full border p-2 rounded font-bold" required></div>
 
-                <div id="max_disc_group" class="hidden"><label class="text-xs font-bold text-gray-500">Giảm tối đa (VNĐ)</label><input type="number" name="max_discount" id="vmax" class="w-full border p-2 rounded" value="0"></div>
-                <div><label class="text-xs font-bold text-gray-500">Đơn tối thiểu (VNĐ)</label><input type="number" name="min_order" id="vmin" class="w-full border p-2 rounded" value="0"></div>
+                <div id="max_disc_group" class="hidden"><label class="text-xs font-bold text-gray-500">Giảm tối đa (VNĐ)</label><input type="number" min="0" name="max_discount" id="vmax" class="w-full border p-2 rounded" value="0"></div>
+                <div><label class="text-xs font-bold text-gray-500">Đơn tối thiểu (VNĐ)</label><input type="number" min="0" name="min_order" id="vmin" class="w-full border p-2 rounded" value="0"></div>
 
-                <div><label class="text-xs font-bold text-gray-500">Điểm đổi quà</label><input type="number" name="points_cost" id="vpoints" class="w-full border p-2 rounded" value="0"></div>
+                <div><label class="text-xs font-bold text-gray-500">Điểm đổi quà</label><input type="number" min="0" name="points_cost" id="vpoints" class="w-full border p-2 rounded" value="0"></div>
                 
                 <div class="col-span-2 bg-blue-50 p-3 rounded-lg border border-blue-100">
                     <label class="text-xs font-bold text-blue-600 flex items-center gap-1"><i class="fas fa-gift"></i> Tặng riêng cho (User ID)</label>
@@ -193,12 +210,12 @@ $vouchers = $stmt->get_result();
                 </div>
 
                 <div class="col-span-2 grid grid-cols-3 gap-2 bg-yellow-50 p-2 rounded border border-yellow-100">
-                    <div><label class="text-xs font-bold text-gray-500">Tổng SL</label><input type="number" name="qty" id="vqty" class="w-full border p-2 rounded bg-white" value="100"></div>
-                    <div><label class="text-xs font-bold text-gray-500">Giới hạn/User</label><input type="number" name="limit_per_user" id="vlimit" class="w-full border p-2 rounded bg-white" value="1"></div>
+                    <div><label class="text-xs font-bold text-gray-500">Tổng SL</label><input type="number" min="1" name="qty" id="vqty" class="w-full border p-2 rounded bg-white" value="100"></div>
+                    <div><label class="text-xs font-bold text-gray-500">Giới hạn/User</label><input type="number" min="1" name="limit_per_user" id="vlimit" class="w-full border p-2 rounded bg-white" value="1"></div>
                     <div>
                         <label class="text-xs font-bold text-gray-500 flex items-center gap-1"><i class="fas fa-hourglass-half"></i> Chờ đổi lại</label>
                         <div class="flex gap-1">
-                            <input type="number" name="cooldown_val" id="vcooldown_val" class="w-full border p-1 rounded bg-white text-center" value="0">
+                            <input type="number" min="0" name="cooldown_val" id="vcooldown_val" class="w-full border p-1 rounded bg-white text-center" value="0">
                             <select name="cooldown_unit" id="vcooldown_unit" class="border p-1 rounded bg-white text-xs w-16">
                                 <option value="60">Phút</option>
                                 <option value="3600">Giờ</option>
