@@ -241,9 +241,15 @@
                 });
 
                 if (data.success) {
-                    // Sửa đường dẫn chuyển hướng sau login
+                    // Kiểm tra xem có yêu cầu redirect không
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirect = urlParams.get('redirect');
+                    
                     if (data.role === 'admin' || data.role === 'manager') {
                         window.location.href = 'Admin_Screen/Admin_Dashboard.php';
+                    } else if (redirect) {
+                        // Nếu có tham số redirect, chuyển về đó (lưu ý: giải mã URL nếu cần)
+                        window.location.href = decodeURIComponent(redirect);
                     } else {
                         window.location.href = 'User_Screen/Home_Screen.php';
                     }

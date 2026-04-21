@@ -16,6 +16,11 @@ if ($id && $user_id) {
         $_SESSION['swal_icon'] = 'success';
         $_SESSION['swal_title'] = 'Đã xóa!';
         $_SESSION['swal_text'] = 'Sản phẩm đã được loại bỏ khỏi giỏ hàng.';
+
+        // Cập nhật lại cache giỏ hàng trong session
+        $count_res = $conn->query("SELECT SUM(quantity) as total FROM cart WHERE user_id = $user_id");
+        $count_row = $count_res->fetch_assoc();
+        $_SESSION['cart_count'] = intval($count_row['total'] ?? 0);
     } else {
         // Tạo Session thông báo lỗi
         $_SESSION['swal_icon'] = 'error';

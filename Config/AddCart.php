@@ -80,6 +80,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $check->close();
 
-    echo json_encode(['success' => true, 'message' => 'Đã thêm vào giỏ hàng thành công!']);
+    // Lấy tổng lượng sản phẩm trong giỏ để cập nhật UI ngay lập tức
+    $count_res = $db->query("SELECT SUM(quantity) as total FROM cart WHERE user_id = $user_id");
+    $count_row = $count_res->fetch_assoc();
+    $total_cart_count = intval($count_row['total'] ?? 0);
+    $_SESSION['cart_count'] = $total_cart_count; // Cập nhật cache session
+
+    echo json_encode([
+        'success' => true, 
+        'message' => 'Đã thêm vào giỏ hàng thành công!',
+        'total_count' => $total_cart_count
+    ]);
 }
 ?>

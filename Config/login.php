@@ -52,6 +52,21 @@ try {
             $_SESSION['user_id'] = $row['id'];
             $_SESSION['role'] = $row['role']; 
             
+            // --- TỐI ƯU HÓA: CACHE THÔNG TIN VÀO SESSION ---
+            // 1. Lấy thông tin cơ bản
+            $u_stmt = $db->prepare("SELECT username, img FROM users WHERE id = ?");
+            $u_stmt->bind_param("i", $row['id']);
+            $u_stmt->execute();
+            $u_data = $u_stmt->get_result()->fetch_assoc();
+            $_SESSION['username'] = $u_data['username'];
+            $_SESSION['img'] = $u_data['img'];
+            $u_stmt->close();
+
+            // 2. Lấy số lượng giỏ hàng ban đầu
+            $c_query = $db->query("SELECT SUM(quantity) as total FROM cart WHERE user_id = " . $row['id']);
+            $c_row = $c_query->fetch_assoc();
+            $_SESSION['cart_count'] = intval($c_row['total'] ?? 0);
+            
             echo json_encode([
                 'success' => true, 
                 'message' => "Đăng nhập thành công!",

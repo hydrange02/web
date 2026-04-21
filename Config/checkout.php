@@ -161,6 +161,11 @@ try {
     $_SESSION['swal_title'] = 'Đặt hàng thành công!';
     $_SESSION['swal_text'] = 'Cảm ơn bạn đã mua sắm. Đơn hàng đang chờ xác nhận.';
 
+    // Cập nhật lại cache giỏ hàng trong session sau khi đã xóa mục trong cart
+    $count_res = $db->query("SELECT SUM(quantity) as total FROM cart WHERE user_id = $user_id");
+    $count_row = $count_res->fetch_assoc();
+    $_SESSION['cart_count'] = intval($count_row['total'] ?? 0);
+
     // Chuyển hướng ngay lập tức
     header('Location: ../User_Screen/History_Screen.php');
     exit();

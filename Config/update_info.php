@@ -71,6 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        // --- TỐI ƯU HÓA: CẬP NHẬT CACHE SESSION ---
+        $_SESSION['username'] = $username;
+
         echo json_encode(['success' => true, 'message' => $msg]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Lỗi SQL: ' . $db->error]);

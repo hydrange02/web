@@ -38,52 +38,57 @@
                 <a href="../User_Screen/Cart_Screen.php" class="relative group p-2 rounded-full hover:bg-blue-50 transition">
                     <i class="fas fa-shopping-bag text-2xl text-gray-600 group-hover:text-blue-600 transition"></i>
                     <?php 
-                        // Logic đếm giỏ hàng
-                        $cart_count = 0;
-                        if(isset($_SESSION['user_id'])) {
-                            // Giả định class Database đã được include ở file cha
+                        // --- TỐI ƯU HÓA: SỬ DỤNG CACHE TỪ SESSION ---
+                        $cart_count = $_SESSION['cart_count'] ?? -1;
+                        if($cart_count === -1 && isset($_SESSION['user_id'])) {
                             $dbConn = Database::getInstance()->getConnection();
                             $uid = $_SESSION['user_id'];
-                            
-                            // Kiểm tra bảng 'carts' tồn tại (đã sửa tên bảng từ 'cart' thành 'carts' cho đúng chuẩn với các file khác nếu cần, hoặc giữ nguyên nếu bảng là 'cart')
-                            // Ở đây tôi dùng 'cart' theo code gốc của bạn, nếu lỗi hãy đổi thành 'carts'
                             $cQuery = $dbConn->query("SELECT SUM(quantity) as total FROM cart WHERE user_id = $uid");
                             if ($cQuery) {
                                 $cRow = $cQuery->fetch_assoc();
-                                $cart_count = $cRow['total'] ?? 0;
+                                $cart_count = intval($cRow['total'] ?? 0);
+                                $_SESSION['cart_count'] = $cart_count;
                             }
                         }
+                        if ($cart_count < 0) $cart_count = 0;
                     ?>
-                    <?php if($cart_count > 0): ?>
-                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm animate-bounce">
-                            <?= $cart_count > 9 ? '9+' : $cart_count ?>
-                        </span>
-                    <?php endif; ?>
+                    <span id="cart-count-badge" class="<?= ($cart_count > 0) ? '' : 'hidden' ?> absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm animate-bounce">
+                        <?= $cart_count > 9 ? '9+' : $cart_count ?>
+                    </span>
                 </a>
 
                 <div class="relative ml-2 group">
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <?php
-                            // Lấy thông tin img mới nhất từ DB để đảm bảo đồng bộ (phòng trường hợp session chưa update)
-                            $userId = $_SESSION['user_id'];
-                            $dbConn = Database::getInstance()->getConnection();
-                            $userQuery = $dbConn->prepare("SELECT img, username, role FROM users WHERE id = ?");
-                            $userQuery->bind_param("i", $userId);
-                            $userQuery->execute();
-                            $userResult = $userQuery->get_result();
-                            $userData = $userResult->fetch_assoc();
-                            
-                            // Ưu tiên lấy từ DB, nếu không có thì lấy từ Session, cuối cùng là ảnh mặc định
-                            $imgUrl = !empty($userData['img']) ? $userData['img'] : 
-                                         (!empty($_SESSION['img']) ? $_SESSION['img'] : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png');
-                            
-                            // Kiểm tra nếu là đường dẫn nội bộ (không chứa http) thì thêm prefix thoát khỏi thư mục Compoment
-                            if (strpos($imgUrl, 'http') === false && !empty($imgUrl)) {
-                                $imgUrl = '../' . $imgUrl;
+                            // --- TỐI ƯU HÓA: LẤY THÔNG TIN TỪ SESSION (GIẢM TRUY VẤN) ---
+                            $imgUrl = $_SESSION['img'] ?? '';
+                            $username = $_SESSION['username'] ?? '';
+                            $role = $_SESSION['role'] ?? 'user';
+
+                            // Nếu thiếu thông tin trong session thì mới gọi DB (phòng trường hợp session bị xóa)
+                            if (empty($username) || empty($imgUrl)) {
+                                $userId = $_SESSION['user_id'];
+                                $dbConn = Database::getInstance()->getConnection();
+                                $userQuery = $dbConn->prepare("SELECT img, username, role FROM users WHERE id = ?");
+                                $userQuery->bind_param("i", $userId);
+                                $userQuery->execute();
+                                $userData = $userQuery->get_result()->fetch_assoc();
+                                if ($userData) {
+                                    $imgUrl = $userData['img'];
+                                    $username = $userData['username'];
+                                    $role = $userData['role'];
+                                    $_SESSION['img'] = $imgUrl;
+                                    $_SESSION['username'] = $username;
+                                }
                             }
                             
-                            $username = $userData['username'] ?? $_SESSION['username'] ?? 'User';
-                            $role = $userData['role'] ?? $_SESSION['role'] ?? 'user';
+                            // Xử lý ảnh mặc định
+                            if (empty($imgUrl)) {
+                                $imgUrl = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                            }
+                            if (strpos($imgUrl, 'http') === false) {
+                                $imgUrl = '../' . $imgUrl;
+                            }
                         ?>
                         <button class="flex items-center gap-2 focus:outline-none">
                             <img class="h-10 w-10 rounded-full object-cover border-2 border-gray-100 shadow-sm group-hover:border-blue-300 transition" 

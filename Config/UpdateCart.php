@@ -57,6 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $update->bind_param("iii", $newQty, $newTotal, $cart_id);
     
     if ($update->execute()) {
+        // Cập nhật lại cache giỏ hàng trong session
+        $cQuery = $db->query("SELECT SUM(quantity) as total FROM cart WHERE user_id = $user_id");
+        $cRow = $cQuery->fetch_assoc();
+        $_SESSION['cart_count'] = intval($cRow['total'] ?? 0);
+
         echo json_encode([
             'success' => true,
             'new_qty' => $newQty,

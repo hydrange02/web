@@ -168,7 +168,7 @@ if ($result->num_rows > 0) {
     echo "<div class='flex flex-col items-center justify-center p-10 text-gray-400'>
             <i class='fas fa-box-open text-6xl mb-4 text-gray-300'></i>
             <p class='text-lg italic'>Bạn chưa có đơn hàng nào.</p>
-            <a href='../index.php' class='mt-4 px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition shadow'>Mua sắm ngay</a>
+            <a href='Home_Screen.php' class='mt-4 px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition shadow'>Mua sắm ngay</a>
           </div>"; 
 } 
 $stmt->close(); 

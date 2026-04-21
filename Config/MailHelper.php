@@ -11,32 +11,36 @@ class MailHelper {
         $refreshToken = trim(Env::get('GMAIL_REFRESH_TOKEN'));
 
         if (!$clientId || !$clientSecret || !$refreshToken) {
-            return null;
+            return ['token' => null, 'error' => 'Missing credentials in .env'];
         }
 
         $ch = curl_init('https://oauth2.googleapis.com/token');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Authorization: Basic ' . base64_encode($clientId . ':' . $clientSecret),
             'Content-Type: application/x-www-form-urlencoded'
         ]);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+            'client_id' => $clientId,
+            'client_secret' => $clientSecret,
             'refresh_token' => $refreshToken,
             'grant_type' => 'refresh_token'
         ]));
 
         $response = curl_exec($ch);
         $err = curl_error($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         
         if ($err) {
-            return null;
+            return ['token' => null, 'error' => 'cURL Error: ' . $err];
         }
 
         $data = json_decode($response, true);
-        return $data['access_token'] ?? null;
+        if (isset($data['access_token'])) {
+            return ['token' => $data['access_token'], 'error' => null];
+        } else {
+            return ['token' => null, 'error' => 'API Response: ' . $response];
+        }
     }
 
     /**
@@ -48,9 +52,11 @@ class MailHelper {
      * @return array ['success' => bool, 'message' => string]
      */
     public static function sendCustomMail($to, $subject, $title, $bodyContent) {
-        $accessToken = self::getAccessToken();
+        $result = self::getAccessToken();
+        $accessToken = $result['token'];
+        
         if (!$accessToken) {
-            return ['success' => false, 'message' => 'Không thể lấy Access Token từ Google. Hãy kiểm tra cấu hình Gmail API trong .env.'];
+            return ['success' => false, 'message' => 'Không thể lấy Access Token từ Google. Lỗi: ' . $result['error']];
         }
 
         $fromEmail = Env::get('GMAIL_FROM_EMAIL', 'your_email@gmail.com');

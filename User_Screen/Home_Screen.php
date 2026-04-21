@@ -164,8 +164,8 @@ if ($sort) $extraParam .= '&sort=' . $sort;
                 </div>
 
                 <div class="swiper-slide relative">
-                    <img src="https://images.unsplash.com/photo-1621939514649-28b12e81658b?q=80&w=2069&auto=format&fit=crop"
-                        class="w-full h-full object-cover brightness-[0.6]" alt="Snacks">
+                    <img src="https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=1974&auto=format&fit=cropssss"
+                        class="w-full h-full object-cover brightness-[0.6]" alt="">
                     <div class="absolute inset-0 flex flex-col justify-center items-start text-left text-white px-10 md:px-24 z-10">
                         <h2 class="text-4xl md:text-7xl font-black mb-4 leading-tight">
                             Bữa Phụ <br> <span class="text-yellow-400">Cực Đã</span>
@@ -180,8 +180,8 @@ if ($sort) $extraParam .= '&sort=' . $sort;
                 </div>
 
                 <div class="swiper-slide relative">
-                    <img src="https://images.unsplash.com/photo-1615993881691-11882d969246?q=80&w=2070&auto=format&fit=crop"
-                        class="w-full h-full object-cover brightness-[0.5]" alt="Delivery">
+                    <img src="https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=1974&auto=format&fit=crop"
+                        class="w-full h-full object-cover brightness-[0.5]" alt="">
                     <div class="absolute inset-0 flex flex-col justify-center items-end text-right text-white px-10 md:px-24 z-10">
                         <h2 class="text-4xl md:text-6xl font-black mb-4">
                             Giao Hàng <br> <span class="text-green-400">Siêu Tốc 2H</span>
@@ -419,6 +419,13 @@ if ($sort) $extraParam .= '&sort=' . $sort;
                         timer: 1500,
                         timerProgressBar: true
                     });
+
+                    // Cập nhật số lượng trên icon giỏ hàng ngay lập tức
+                    const badge = document.getElementById('cart-count-badge');
+                    if (badge && data.total_count > 0) {
+                        badge.innerText = data.total_count > 9 ? '9+' : data.total_count;
+                        badge.classList.remove('hidden');
+                    }
                 } else {
                     if (data.message && data.message.includes('đăng nhập')) {
                         // Nếu chưa đăng nhập thì chuyển hướng

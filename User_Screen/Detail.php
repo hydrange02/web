@@ -239,6 +239,12 @@ if ($id) {
 
                 if (data.success) {
                     showToast(data.message, 'success');
+                    // Cập nhật số lượng trên icon giỏ hàng ngay lập tức
+                    const badge = document.getElementById('cart-count-badge');
+                    if (badge && data.total_count > 0) {
+                        badge.innerText = data.total_count > 9 ? '9+' : data.total_count;
+                        badge.classList.remove('hidden');
+                    }
                 } else {
                     showToast(data.message, 'error');
                     if (data.message.includes("đăng nhập")) {

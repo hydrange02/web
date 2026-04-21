@@ -34,6 +34,9 @@ $stmt = $db->prepare("UPDATE users SET img = ? WHERE id = ?");
 $stmt->bind_param('si', $imageUrl, $user_id);
 
 if ($stmt->execute()) {
+    // --- TỐI ƯU HÓA: CẬP NHẬT CACHE SESSION ---
+    $_SESSION['img'] = $imageUrl;
+
     // Trả về đường dẫn để Frontend hiển thị
     echo json_encode([
         'success' => true, 

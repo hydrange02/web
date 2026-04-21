@@ -4,7 +4,9 @@ include '../Config/Database.php';
 
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id) {
-    header('Location: ../index.php');
+    // Lưu URL hiện tại để quay lại sau khi đăng nhập
+    $redirect_url = urlencode($_SERVER['REQUEST_URI']);
+    header("Location: ../index.php?redirect=$redirect_url");
     exit;
 }
 
@@ -120,6 +122,7 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
