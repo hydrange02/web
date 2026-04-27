@@ -1,10 +1,13 @@
 <?php
-// File: Web php/Compoment/Admin_Menu.php
-// Lấy tên file hiện tại để highlight menu
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 
-<aside class="fixed top-0 left-0 z-40 w-64 h-screen bg-slate-900 text-white transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
+<!-- Floating Toggle Button for Mobile -->
+<button onclick="document.getElementById('admin-sidebar').classList.toggle('-translate-x-full')" class="fixed bottom-6 right-6 z-50 bg-blue-600 text-white w-14 h-14 rounded-full shadow-2xl sm:hidden flex items-center justify-center hover:bg-blue-700 transition">
+    <i class="fas fa-bars text-xl"></i>
+</button>
+
+<aside id="admin-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen bg-slate-900 text-white transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
     <div class="h-full px-3 py-4 overflow-y-auto flex flex-col">
         
         <a href="../Admin_Screen/Admin_Dashboard.php" class="flex items-center pl-2.5 mb-8 mt-2">

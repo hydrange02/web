@@ -129,20 +129,43 @@
                 justify-content: center;
                 padding-right: 0;
                 flex-direction: column;
+                height: 100svh;
+                overflow: hidden; /* Ngăn cuộn */
             }
 
             .shop-name-container {
                 position: static;
                 transform: none;
-                margin-bottom: 2rem;
-                margin-top: 2rem;
+                margin-bottom: 1rem;
+                margin-top: 0;
                 max-width: 90%;
+            }
+            
+            .shop-logo {
+                width: clamp(100px, 30vw, 150px);
+            }
+            
+            .shop-slogan {
+                font-size: clamp(0.85rem, 3vw, 1.1rem);
+                margin-top: 0.5rem;
+                margin-bottom: 0.5rem;
             }
 
             .login-box {
                 width: 90%;
                 max-width: 400px;
-                margin-bottom: 2rem;
+                margin-bottom: 0;
+                padding: 1.5rem;
+            }
+            
+            .login-box h1 {
+                font-size: 2rem;
+                margin-bottom: 1rem;
+            }
+            
+            .login-box input, .login-box button {
+                height: 2.75rem !important;
+                margin-bottom: 0.75rem !important;
             }
         }
     </style>

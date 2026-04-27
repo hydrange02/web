@@ -53,7 +53,7 @@ while ($cat = $categories->fetch_assoc()) $cat_options[] = $cat['category'];
 <body class="bg-slate-100 min-h-screen font-sans">
     <?php include '../Compoment/Admin_Menu.php'; ?>
 
-    <div class="ml-64 p-8 transition-all duration-300">
+    <div class="md:ml-64 p-8 transition-all duration-300">
 
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-slate-800">Sản Phẩm & Kho 📦</h1>
@@ -108,7 +108,7 @@ while ($cat = $categories->fetch_assoc()) $cat_options[] = $cat['category'];
                         <img id="preview_img_add" src="https://via.placeholder.com/300x200?text=Bấm+để+chọn+ảnh"
                             class="w-full h-full object-contain p-1 transition-transform duration-300 group-hover:scale-105">
 
-                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-100 md:opacity-0 group-hover:opacity-100 transition">
                             <i class="fas fa-camera text-white text-2xl"></i>
                         </div>
 
@@ -129,7 +129,7 @@ while ($cat = $categories->fetch_assoc()) $cat_options[] = $cat['category'];
             </form>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-slate-50 text-slate-600 uppercase text-xs tracking-wider">
                     <tr>
@@ -219,7 +219,7 @@ while ($cat = $categories->fetch_assoc()) $cat_options[] = $cat['category'];
                     <div class="relative w-full h-32 group cursor-pointer overflow-hidden rounded-lg border bg-white" onclick="document.getElementById('upload_prod_img_edit').click()">
                         <img id="preview_img_edit" src="https://via.placeholder.com/300x200?text=Bấm+để+chọn+ảnh"
                             class="w-full h-full object-contain p-1 transition-transform duration-300 group-hover:scale-105">
-                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-100 md:opacity-0 group-hover:opacity-100 transition">
                             <i class="fas fa-camera text-white text-2xl"></i>
                         </div>
                         <div id="loading_img_edit" class="absolute inset-0 bg-white/90 flex items-center justify-center hidden">

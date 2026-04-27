@@ -9,7 +9,7 @@
                  class="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-110">
         </a>
         
-        <div class="absolute bottom-0 inset-x-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-white/90 backdrop-blur-sm border-t border-gray-100">
+        <div class="absolute bottom-0 inset-x-0 p-3 translate-y-0 md:translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-white/90 backdrop-blur-sm border-t border-gray-100">
             <button onclick="buyNow(<?= $row['id'] ?>, <?= $row['price'] ?>)" 
                     class="bg-blue-600 text-white w-full py-2 rounded-lg font-bold text-xs hover:bg-blue-700 shadow-md flex items-center justify-center gap-2 transition-colors">
                 <i class="fas fa-cart-plus"></i> Thêm vào giỏ

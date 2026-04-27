@@ -538,7 +538,7 @@ $my_vouchers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                             <p class="text-xs text-gray-500 mb-1"><i class="fas fa-phone-alt mr-1"></i> ${addr.phone}</p>
                             <p class="text-xs text-gray-600 line-clamp-2">${addr.address}</p>
                         </div>
-                        <div class="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="absolute top-3 right-3 flex gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                             <button onclick="showEditForm(${addr.id}, '${addr.recipient_name}', '${addr.phone}', '${addr.address}')" class="w-7 h-7 flex items-center justify-center bg-gray-100 hover:bg-blue-500 hover:text-white rounded-full text-gray-500 text-xs transition"><i class="fas fa-pen"></i></button>
                             <button onclick="deleteAddress(${addr.id})" class="w-7 h-7 flex items-center justify-center bg-gray-100 hover:bg-red-500 hover:text-white rounded-full text-gray-500 text-xs transition"><i class="fas fa-trash"></i></button>
                         </div>

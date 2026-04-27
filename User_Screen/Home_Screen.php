@@ -264,7 +264,7 @@ if ($sort) $extraParam .= '&sort=' . $sort;
             </div>
 
             <?php if ($result->num_rows > 0): ?>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                     <?php
                     while ($row = $result->fetch_assoc()):
                         $originalPrice = $row['original_price'] ?? $row['price'];
@@ -289,7 +289,7 @@ if ($sort) $extraParam .= '&sort=' . $sort;
                                         alt="<?= htmlspecialchars($row['name']) ?>">
                                 </a>
                                 <button onclick="addToCart(<?= $row['id'] ?>)"
-                                    class="absolute bottom-3 right-3 bg-blue-600 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:bg-blue-700 hover:scale-110 z-20">
+                                    class="absolute bottom-3 right-3 bg-blue-600 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:bg-blue-700 hover:scale-110 z-20">
                                     <i class="fas fa-cart-plus"></i>
                                 </button>
                             </div>

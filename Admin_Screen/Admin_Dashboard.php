@@ -53,7 +53,7 @@ $chart_data = json_encode(array_column($top_products, 'total_sold'));
 <body class="bg-slate-100 min-h-screen font-sans">
     <?php include '../Compoment/Admin_Menu.php'; ?>
 
-    <div class="ml-64 p-8 transition-all duration-300">
+    <div class="md:ml-64 p-8 transition-all duration-300">
         
         <div class="flex justify-between items-center mb-8">
             <div>

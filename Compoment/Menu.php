@@ -60,12 +60,10 @@
                 <div class="relative ml-2 group">
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <?php
-                            // --- TỐI ƯU HÓA: LẤY THÔNG TIN TỪ SESSION (GIẢM TRUY VẤN) ---
                             $imgUrl = $_SESSION['img'] ?? '';
                             $username = $_SESSION['username'] ?? '';
                             $role = $_SESSION['role'] ?? 'user';
 
-                            // Nếu thiếu thông tin trong session thì mới gọi DB (phòng trường hợp session bị xóa)
                             if (empty($username) || empty($imgUrl)) {
                                 $userId = $_SESSION['user_id'];
                                 $dbConn = Database::getInstance()->getConnection();
@@ -82,7 +80,6 @@
                                 }
                             }
                             
-                            // Xử lý ảnh mặc định
                             if (empty($imgUrl)) {
                                 $imgUrl = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
                             }
@@ -96,9 +93,9 @@
                                  onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'"
                                  alt="Avatar">
                         </button>
-                        <div class="absolute right-0 mt-4 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right z-50 top-full">
+                        <div class="absolute right-0 mt-4 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 opacity-100 visible md:opacity-0 md:invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right z-50 top-full">
                             
-                            <div class="absolute -top-2 right-4 w-4 h-4 bg-white border-t border-l border-gray-100 transform rotate-45"></div>
+                            <div class="absolute -top-2 right-4 w-4 h-4 bg-white border-t border-l border-gray-100 transform rotate-45 md:block hidden"></div>
 
                             <div class="px-5 py-3 border-b border-gray-50 bg-gray-50/50 rounded-t-xl">
                                 <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider">Tài khoản</p>
@@ -122,12 +119,30 @@
                             </a>
                         </div>
                     <?php else: ?>
-                        <a href="../index.php" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-lg hover:shadow-blue-500/30 transition transform hover:-translate-y-0.5">
+                        <a href="../index.php" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-lg hover:shadow-blue-500/30 transition transform hover:-translate-y-0.5 hidden md:block">
+                            Đăng nhập
+                        </a>
+                        <a href="../index.php" class="md:hidden bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded font-bold text-xs shadow-lg transition">
                             Đăng nhập
                         </a>
                     <?php endif; ?>
                 </div>
             </div>
+        </div>
+        
+        <!-- Mobile menu elements always show when minimized -->
+        <div id="mobile-menu" class="md:hidden border-t border-gray-100 bg-white/95 backdrop-blur-md px-4 py-2 flex justify-around flex-wrap gap-2">
+            <a href="../User_Screen/Home_Screen.php" class="text-gray-600 hover:text-blue-600 font-bold text-sm uppercase transition flex-1 text-center bg-gray-50 p-2 rounded">
+                Trang chủ
+            </a>
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="../User_Screen/VoucherWallet_Screen.php" class="text-gray-600 hover:text-orange-500 font-bold text-sm uppercase transition flex-1 text-center bg-gray-50 p-2 rounded flex items-center justify-center gap-1">
+                    <i class="fas fa-ticket-alt"></i> Voucher
+                </a>
+                <a href="../User_Screen/History_Screen.php" class="text-gray-600 hover:text-blue-600 font-bold text-sm uppercase transition flex-1 text-center bg-gray-50 p-2 rounded">
+                    Đơn hàng
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 </nav>

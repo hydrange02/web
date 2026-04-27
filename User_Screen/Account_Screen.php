@@ -258,7 +258,7 @@ $stmt->close();
                     </div>
                     <p class="text-xs text-gray-600 mt-1 line-clamp-2">${addr.address}</p>
                     
-                    <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                    <div class="absolute top-2 right-2 flex gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition">
                         <button onclick="openAddressModal(${addr.id}, '${safeName}', '${addr.phone}', '${safeAddr}')" class="w-6 h-6 flex items-center justify-center bg-white text-blue-500 rounded border hover:bg-blue-50 hover:text-white transition"><i class="fas fa-pen text-[10px]"></i></button>
                         <button onclick="deleteAddress(${addr.id})" class="w-6 h-6 flex items-center justify-center bg-white text-red-500 rounded border hover:bg-red-50 hover:text-white transition"><i class="fas fa-trash text-[10px]"></i></button>
                     </div>

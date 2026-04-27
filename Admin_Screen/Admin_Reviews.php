@@ -50,7 +50,7 @@ $reviews = $stmt->get_result();
 <body class="bg-gray-100 min-h-screen font-sans">
     <?php include '../Compoment/Admin_Menu.php'; ?>
 
-    <div class="ml-64 p-8 transition-all duration-300">
+    <div class="md:ml-64 p-8 transition-all duration-300">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Quản Lý Đánh Giá 💬</h1>
 
         <div class="bg-white p-4 rounded-xl shadow-sm mb-6 flex justify-between items-center">
@@ -62,7 +62,7 @@ $reviews = $stmt->get_result();
             <div class="text-sm text-gray-500">Hiển thị <b><?= $reviews->num_rows ?></b> / <b><?= $totalRows ?></b></div>
         </div>
 
-        <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="bg-white rounded-xl shadow overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-gray-200 text-gray-600 uppercase text-xs">
                     <tr>
