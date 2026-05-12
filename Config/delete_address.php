@@ -20,7 +20,7 @@ $db = Database::getInstance()->getConnection();
 try {
     // QUAN TRỌNG: Thêm 'AND user_id = ?' để đảm bảo chính chủ
     // (Giả sử bảng tên là user_address hoặc addresses, hãy sửa tên bảng cho đúng với DB của bạn)
-    $stmt = $db->prepare("DELETE FROM user_address WHERE id = ? AND user_id = ?");
+    $stmt = $db->prepare("DELETE FROM user_addresses WHERE id = ? AND user_id = ?");
     $stmt->bind_param("ii", $id, $user_id);
     
     if ($stmt->execute()) {
