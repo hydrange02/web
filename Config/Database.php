@@ -69,8 +69,8 @@ if (!class_exists('Database')) {
     }
 }
 
-// Hàm helper để lấy kết nối nhanh
-function getDB() {
-    return Database::getInstance()->getConnection();
+// Khởi tạo biến $conn dùng chung
+if (!isset($conn)) {
+    $conn = Database::getInstance()->getConnection();
 }
 ?>
