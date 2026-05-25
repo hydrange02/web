@@ -15,8 +15,8 @@ $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 $offset = ($page - 1) * $limit;
 $category = $_GET['category'] ?? '';
 $search = $_GET['search'] ?? '';
-$min_price = isset($_GET['min_price']) && is_numeric($_GET['min_price']) ? intval($_GET['min_price']) : '';
-$max_price = isset($_GET['max_price']) && is_numeric($_GET['max_price']) ? intval($_GET['max_price']) : '';
+$min_price = isset($_GET['min_price']) && is_numeric($_GET['min_price']) ? max(0, intval($_GET['min_price'])) : '';
+$max_price = isset($_GET['max_price']) && is_numeric($_GET['max_price']) ? max(0, intval($_GET['max_price'])) : '';
 $sort = $_GET['sort'] ?? 'newest';
 
 $whereSQL = [];
@@ -228,9 +228,9 @@ if ($sort) $extraParam .= '&sort=' . $sort;
                     <div class="flex items-center gap-3">
                         <div class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
                             <span class="text-sm font-bold text-gray-500">Giá:</span>
-                            <input type="number" name="min_price" value="<?= $min_price ?>" placeholder="Min" class="w-20 bg-transparent text-sm outline-none text-center font-bold">
+                            <input type="number" name="min_price" value="<?= $min_price ?>" placeholder="Min" min="0" class="w-20 bg-transparent text-sm outline-none text-center font-bold">
                             <span class="text-gray-400">-</span>
-                            <input type="number" name="max_price" value="<?= $max_price ?>" placeholder="Max" class="w-20 bg-transparent text-sm outline-none text-center font-bold">
+                            <input type="number" name="max_price" value="<?= $max_price ?>" placeholder="Max" min="0" class="w-20 bg-transparent text-sm outline-none text-center font-bold">
                         </div>
                     </div>
 
@@ -244,7 +244,7 @@ if ($sort) $extraParam .= '&sort=' . $sort;
                         <button type="submit" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-blue-700 transition shadow-md text-sm flex items-center gap-2">
                             <i class="fas fa-filter"></i> Lọc
                         </button>
-                        <?php if ($search || $category || $min_price || $max_price || $sort !== 'newest'): ?>
+                        <?php if ($search || $category || $min_price !== '' || $max_price !== '' || $sort !== 'newest'): ?>
                             <a href="Home_Screen.php" class="text-red-500 hover:text-red-700 text-sm font-bold px-2 underline decoration-dashed">Xóa lọc</a>
                         <?php endif; ?>
                     </div>
