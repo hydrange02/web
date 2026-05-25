@@ -207,15 +207,25 @@ if ($id) {
 
         // 2. Logic Validate Input (Khi người dùng nhập tay)
         function validateQuantity(input) {
+            if (input.value === '') {
+                updateTotalPrice();
+                return;
+            }
             let val = parseInt(input.value);
-            if (isNaN(val) || val < 1) {
-                input.value = 1;
-            } else if (val > maxStock) {
+            if (val > maxStock) {
                 input.value = maxStock;
                 showToast(`Chỉ còn ${maxStock} sản phẩm!`, 'warning');
             }
             updateTotalPrice();
         }
+
+        document.getElementById('quantity')?.addEventListener('blur', function() {
+            let val = parseInt(this.value);
+            if (isNaN(val) || val < 1) {
+                this.value = 1;
+                updateTotalPrice();
+            }
+        });
 
         // Cập nhật tổng giá khi trang vừa load
         updateTotalPrice();

@@ -41,7 +41,7 @@ if ($user_id) {
                 <div class="col-span-1 md:col-span-2 flex justify-center">
                     <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden h-9 shadow-sm">
                         <button onclick="updateCartQty(<?= $row['id'] ?>, 'decrease')" class="w-8 h-full bg-gray-50 hover:bg-gray-200 text-gray-600 font-bold">-</button>
-                        <input type="text" id="qty-<?= $row['id'] ?>" value="<?= $row['quantity'] ?>" readonly class="w-10 h-full text-center text-sm font-bold bg-white outline-none">
+                        <input type="number" id="qty-<?= $row['id'] ?>" value="<?= $row['quantity'] ?>" onchange="updateCartQty(<?= $row['id'] ?>, 'update', this.value)" class="w-12 h-full text-center text-sm font-bold bg-white outline-none appearance-none" min="1">
                         <button onclick="updateCartQty(<?= $row['id'] ?>, 'increase')" class="w-8 h-full bg-gray-50 hover:bg-gray-200 text-gray-600 font-bold">+</button>
                     </div>
                 </div>
@@ -94,16 +94,21 @@ if ($user_id) {
 
 <script>
     // 1. Update Qty AJAX
-    async function updateCartQty(cartId, action) {
+    async function updateCartQty(cartId, action, newQty = null) {
         const qtyInput = document.getElementById(`qty-${cartId}`);
+        if (qtyInput.disabled) return; // Ngăn chặn click liên tục khi đang xử lý
         const currentQty = parseInt(qtyInput.value);
         if (action === 'decrease' && currentQty <= 1) return;
 
         try {
             qtyInput.style.opacity = '0.5';
+            qtyInput.disabled = true;
             const formData = new FormData();
             formData.append('cart_id', cartId);
             formData.append('action', action);
+            if (action === 'update' && newQty !== null) {
+                formData.append('quantity', newQty);
+            }
 
             const res = await fetch('../Config/UpdateCart.php', {
                 method: 'POST',
@@ -114,18 +119,37 @@ if ($user_id) {
             if (data.success) {
                 qtyInput.value = data.new_qty;
                 qtyInput.style.opacity = '1';
+                qtyInput.disabled = false;
                 document.getElementById(`total-${cartId}`).textContent = new Intl.NumberFormat('vi-VN').format(data.new_total) + '₫';
                 const checkbox = document.getElementById(`cb-${cartId}`);
                 checkbox.dataset.qty = data.new_qty;
                 checkbox.dataset.total = data.new_total;
                 if (checkbox.checked) calculateTotal();
             } else {
-                alert(data.message);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Thông báo',
+                    text: data.message,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                if (data.new_qty !== undefined) {
+                    qtyInput.value = data.new_qty;
+                } else {
+                    qtyInput.value = currentQty;
+                }
                 qtyInput.style.opacity = '1';
+                qtyInput.disabled = false;
             }
         } catch (error) {
             console.error(error);
-            alert('Lỗi kết nối server');
+            qtyInput.style.opacity = '1';
+            qtyInput.disabled = false;
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Lỗi kết nối server',
+            });
         }
     }
 
